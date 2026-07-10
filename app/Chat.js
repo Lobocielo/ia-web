@@ -109,6 +109,23 @@ export default function Chat() {
 
   const removeImage = () => { setImage(null); setImagePreview(null) }
 
+  const searchML = async (query, sort = 'relevance') => {
+    const s = sort === 'price_asc' ? '&sort=price_asc' : sort === 'price_desc' ? '&sort=price_desc' : ''
+    const res = await fetch(`https://api.mercadolibre.com/sites/MLA/search?q=${encodeURIComponent(query)}${s}&limit=8`)
+    if (!res.ok) throw new Error('Error de MercadoLibre')
+    const data = await res.json()
+    return (data.results || []).map(i => ({
+      id: i.id,
+      title: i.title,
+      price: i.price,
+      currency: i.currency_id,
+      thumbnail: i.thumbnail?.replace('http://', 'https://'),
+      permalink: i.permalink,
+      free_shipping: i.shipping?.free_shipping || false,
+      condition: i.condition
+    }))
+  }
+
   const sendMessage = async (text) => {
     const msg = text || input.trim()
     if (!msg || loading) return
@@ -150,11 +167,24 @@ export default function Chat() {
         throw new Error(errData.error || 'Error al conectar con la IA')
       }
       const data = await res.json()
-      setMessages([...newMessages, {
-        role: 'assistant',
-        content: data.reply,
-        products: data.products || null
-      }])
+
+      if (data.search) {
+        try {
+          const items = await searchML(data.search.query, data.search.sort)
+          setMessages([...newMessages, {
+            role: 'assistant',
+            content: `Encontre ${items.length} productos para "${data.search.query}":`,
+            products: items
+          }])
+        } catch {
+          setMessages([...newMessages, {
+            role: 'assistant',
+            content: `Quise buscar "${data.search.query}" en MercadoLibre pero hubo un error. Podes intentar de nuevo.`
+          }])
+        }
+      } else {
+        setMessages([...newMessages, { role: 'assistant', content: data.reply }])
+      }
     } catch (err) {
       setError(err.message)
     } finally {
