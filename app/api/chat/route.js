@@ -22,7 +22,7 @@ export async function POST(request) {
         'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'llama3-70b-8192',
+        model: 'llama-3.3-70b-versatile',
         messages: [systemMessage, ...messages],
         temperature: 0.7,
         max_tokens: 2048,
