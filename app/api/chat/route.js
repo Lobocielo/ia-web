@@ -4,7 +4,7 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY
 
 export async function POST(request) {
   try {
-    const { messages } = await request.json()
+    const { messages, model } = await request.json()
 
     if (!GROQ_API_KEY) {
       return NextResponse.json({ error: 'API key no configurada' }, { status: 500 })
@@ -22,7 +22,7 @@ export async function POST(request) {
         'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
+        model: model || 'llama-3.3-70b-versatile',
         messages: [systemMessage, ...messages],
         temperature: 0.7,
         max_tokens: 2048,
@@ -31,10 +31,11 @@ export async function POST(request) {
     })
 
     if (!response.ok) {
-      const err = await response.text()
-      console.error('Groq error:', err)
+      const err = await response.json().catch(() => ({}))
+      const msg = err.error?.message || JSON.stringify(err)
+      console.error('Groq error:', msg)
       return NextResponse.json(
-        { error: 'Error al comunicarse con Groq' },
+        { error: `Error Groq: ${msg}` },
         { status: response.status }
       )
     }
