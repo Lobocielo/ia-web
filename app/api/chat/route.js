@@ -7,18 +7,18 @@ const TOOLS = [
     type: 'function',
     function: {
       name: 'search_mercadolibre',
-      description: 'Busca productos en MercadoLibre Argentina. Usa esta funcion cuando el usuario quiera buscar, comprar, comparar o ver precios de productos. Ejemplos: "busca auriculares", "quiero un celular barato", "cuanto sale una silla gamer", "el mas barato de X".',
+      description: 'Busca productos en MercadoLibre Argentina. Usa esta funcion cuando el usuario quiera buscar, comprar, comparar o ver precios de productos.',
       parameters: {
         type: 'object',
         properties: {
           query: {
             type: 'string',
-            description: 'Termino de busqueda. Ejemplo: "auriculares bluetooth", "notebook gamer", "silla ergonomica"'
+            description: 'Termino de busqueda. Ejemplo: "auriculares bluetooth", "notebook gamer"'
           },
           sort: {
             type: 'string',
             enum: ['price_asc', 'price_desc', 'relevance'],
-            description: 'Orden: price_asc = mas barato primero, price_desc = mas caro primero, relevance = relevance'
+            description: 'price_asc = mas barato, price_desc = mas caro, relevance = por defecto'
           }
         },
         required: ['query']
@@ -27,63 +27,21 @@ const TOOLS = [
   }
 ]
 
-async function searchMercadoLibre(query, sort = 'relevance') {
-  const sortParam = sort === 'price_asc' ? '&sort=price_asc' : sort === 'price_desc' ? '&sort=price_desc' : ''
-  const res = await fetch(
-    `https://api.mercadolibre.com/sites/MLA/search?q=${encodeURIComponent(query)}${sortParam}&limit=8`
-  )
-  if (!res.ok) return { items: [] }
+async function searchML(query, sort = 'relevance') {
+  const s = sort === 'price_asc' ? '&sort=price_asc' : sort === 'price_desc' ? '&sort=price_desc' : ''
+  const res = await fetch(`https://api.mercadolibre.com/sites/MLA/search?q=${encodeURIComponent(query)}${s}&limit=8`)
+  if (!res.ok) return []
   const data = await res.json()
-  return { items: (data.results || []).map(item => ({
-    id: item.id,
-    title: item.title,
-    price: item.price,
-    currency: item.currency_id,
-    thumbnail: item.thumbnail?.replace('http://', 'https://'),
-    permalink: item.permalink,
-    free_shipping: item.shipping?.free_shipping || false,
-    condition: item.condition
-  }))} 
-}
-
-async function callGroq(messages, model) {
-  const systemMessage = {
-    role: 'system',
-    content: `Sos un asistente util, amigable y conciso. Respondes en el mismo idioma que el usuario.
-Tenes acceso a una funcion para buscar productos en MercadoLibre Argentina.
-Cuando el usuario pida buscar, comprar, comparar o ver precios de algo, USA la funcion search_mercadolibre.
-Interpreta frases como "el mas barato", "el mas carato", "baratos", "economicos", "decente" para decidir el orden.
-Si el usuario dice "busca auriculares el mas barato" → busca "auriculares" con sort price_asc.
-Si el usuario dice "el mas caro" → sort price_desc.
-Si no dice nada de precio → relevance.
-Si es codigo, lo formateas bien.`
-  }
-
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${GROQ_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: model || 'llama-3.3-70b-versatile',
-      messages: [systemMessage, ...messages],
-      tools: TOOLS,
-      tool_choice: 'auto',
-      temperature: 0.7,
-      max_tokens: 2048,
-      stream: false
-    })
-  })
-
-  if (!response.ok) {
-    const errText = await response.text().catch(() => '')
-    let msg = 'Error desconocido'
-    try { msg = JSON.parse(errText).error?.message || errText } catch { msg = errText.slice(0, 200) || `HTTP ${response.status}` }
-    throw new Error(`Groq: ${msg}`)
-  }
-
-  return await response.json()
+  return (data.results || []).map(i => ({
+    id: i.id,
+    title: i.title,
+    price: i.price,
+    currency: i.currency_id,
+    thumbnail: i.thumbnail?.replace('http://', 'https://'),
+    permalink: i.permalink,
+    free_shipping: i.shipping?.free_shipping || false,
+    condition: i.condition
+  }))
 }
 
 export async function POST(request) {
@@ -94,46 +52,98 @@ export async function POST(request) {
       return NextResponse.json({ error: 'API key no configurada' }, { status: 500 })
     }
 
-    const data = await callGroq(messages, model)
-    const choice = data.choices?.[0]
+    const systemMsg = {
+      role: 'system',
+      content: `Sos un asistente util y conciso. Respondes en el mismo idioma que el usuario.
+Tenes una funcion search_mercadolibre para buscar productos en Argentina.
+USALA cuando el usuario quiera buscar, comprar, comparar o ver precios de algo.
+Interpreta "el mas barato" → sort price_asc, "el mas caro" → sort price_desc.
+Si es codigo, lo formateas bien.`
+    }
 
-    if (!choice) {
+    const groqUrl = 'https://api.groq.com/openai/v1/chat/completions'
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${GROQ_API_KEY}`
+    }
+
+    const r1 = await fetch(groqUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model: model || 'llama-3.3-70b-versatile',
+        messages: [systemMsg, ...messages],
+        tools: TOOLS,
+        tool_choice: 'auto',
+        temperature: 0.7,
+        max_tokens: 2048
+      })
+    })
+
+    if (!r1.ok) {
+      const err = await r1.text().catch(() => '')
+      console.error('Groq r1 error:', r1.status, err)
+      return NextResponse.json({ error: `Error Groq: ${err.slice(0, 200)}` }, { status: r1.status })
+    }
+
+    const d1 = await r1.json()
+    const msg = d1.choices?.[0]?.message
+
+    if (!msg) {
       return NextResponse.json({ reply: 'No obtuve respuesta.' })
     }
 
-    const message = choice.message
+    if (msg.tool_calls && msg.tool_calls.length > 0) {
+      const toolMessages = []
 
-    if (message.tool_calls && message.tool_calls.length > 0) {
-      const allMessages = [...messages, message]
-      const searchResults = []
-
-      for (const toolCall of message.tool_calls) {
-        const fn = toolCall.function
-        if (fn.name === 'search_mercadolibre') {
+      for (const tc of msg.tool_calls) {
+        if (tc.function.name === 'search_mercadolibre') {
           let args = {}
-          try { args = JSON.parse(fn.arguments) } catch { args = { query: fn.arguments } }
-          const results = await searchMercadoLibre(args.query, args.sort)
-          searchResults.push(results)
-          allMessages.push({
+          try { args = JSON.parse(tc.function.arguments) } catch { args = { query: tc.function.arguments } }
+          const items = await searchML(args.query, args.sort)
+          toolMessages.push({
             role: 'tool',
-            tool_call_id: toolCall.id,
-            content: JSON.stringify(results)
+            tool_call_id: tc.id,
+            content: JSON.stringify({ items })
           })
         }
       }
 
-      const finalData = await callGroq(allMessages, model)
-      const finalReply = finalData.choices?.[0]?.message?.content || 'No obtuve respuesta.'
+      const r2 = await fetch(groqUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: model || 'llama-3.3-70b-versatile',
+          messages: [systemMsg, ...messages, msg, ...toolMessages],
+          temperature: 0.7,
+          max_tokens: 2048
+        })
+      })
+
+      if (!r2.ok) {
+        const err = await r2.text().catch(() => '')
+        console.error('Groq r2 error:', r2.status, err)
+        const allItems = toolMessages.flatMap(tm => {
+          try { return JSON.parse(tm.content).items } catch { return [] }
+        })
+        return NextResponse.json({ reply: 'Encontre estos productos:', products: allItems })
+      }
+
+      const d2 = await r2.json()
+      const finalContent = d2.choices?.[0]?.message?.content
+      const allItems = toolMessages.flatMap(tm => {
+        try { return JSON.parse(tm.content).items } catch { return [] }
+      })
 
       return NextResponse.json({
-        reply: finalReply,
-        products: searchResults.flatMap(r => r.items)
+        reply: finalContent || 'Encontre estos productos:',
+        products: allItems
       })
     }
 
-    return NextResponse.json({ reply: message.content || 'No obtuve respuesta.' })
+    return NextResponse.json({ reply: msg.content || 'No obtuve respuesta.' })
   } catch (error) {
     console.error('Server error:', error)
-    return NextResponse.json({ error: error.message || 'Error interno del servidor' }, { status: 500 })
+    return NextResponse.json({ error: error.message || 'Error interno' }, { status: 500 })
   }
 }
