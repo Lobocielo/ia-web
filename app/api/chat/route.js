@@ -31,9 +31,15 @@ export async function POST(request) {
     })
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({}))
-      const msg = err.error?.message || JSON.stringify(err)
-      console.error('Groq error:', msg)
+      const errText = await response.text().catch(() => '')
+      let msg = 'Error desconocido'
+      try {
+        const errJson = JSON.parse(errText)
+        msg = errJson.error?.message || errText
+      } catch {
+        msg = errText.slice(0, 200) || `HTTP ${response.status}`
+      }
+      console.error('Groq error:', response.status, msg)
       return NextResponse.json(
         { error: `Error Groq: ${msg}` },
         { status: response.status }

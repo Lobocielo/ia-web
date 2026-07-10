@@ -43,7 +43,40 @@ export default function Chat() {
     }
   }, [input])
 
-  const handleImage = (e) => {
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const MAX = 800
+          let w = img.width
+          let h = img.height
+
+          if (w > MAX || h > MAX) {
+            if (w > h) {
+              h = Math.round((h * MAX) / w)
+              w = MAX
+            } else {
+              w = Math.round((w * MAX) / h)
+              h = MAX
+            }
+          }
+
+          canvas.width = w
+          canvas.height = h
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0, w, h)
+          resolve(canvas.toDataURL('image/jpeg', 0.7))
+        }
+        img.src = e.target.result
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const handleImage = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -52,12 +85,9 @@ export default function Chat() {
       return
     }
 
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      setImage(reader.result)
-      setImagePreview(reader.result)
-    }
-    reader.readAsDataURL(file)
+    const compressed = await compressImage(file)
+    setImage(compressed)
+    setImagePreview(compressed)
     e.target.value = ''
   }
 
