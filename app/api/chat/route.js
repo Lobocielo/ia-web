@@ -13,8 +13,26 @@ export async function POST(request) {
     const systemMsg = {
       role: 'system',
       content: `Sos un asistente util y conciso. Respondes en el mismo idioma que el usuario.
-Si el usuario quiere buscar productos, decile que podes buscar con el boton de busqueda o abri MercadoLibre para el.
-Si es codigo, lo formateas bien.`
+Si el usuario quiere buscar un producto, responder EXACTAMENTE asi (sin nada mas):
+SEARCH_QUERY:termino de busqueda limpio (sin palabras como "busca", "el mas barato", etc)
+Solo ponelo en la primera linea. Despues podes agregar un commentario corto.
+Ejemplos:
+Usuario: "busca auriculares bluetooth baratos"
+Respuesta:
+SEARCH_QUERY:auriculares bluetooth
+Encontre los auriculares bluetooth mas baratos para vos.
+
+Usuario: "el celular mas caro de samsung"
+Respuesta:
+SEARCH_QUERY:celular samsung
+Aca estan los celulares Samsung ordenados de mayor a menor precio.
+
+Usuario: "silla gamer"
+Respuesta:
+SEARCH_QUERY:silla gamer
+Estas son las sillas gamer disponibles.
+
+Para TODO LO DEMAS (preguntas, codigo, etc), respondes normal SIN usar SEARCH_QUERY.`
     }
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -26,8 +44,8 @@ Si es codigo, lo formateas bien.`
       body: JSON.stringify({
         model: model || 'llama-3.3-70b-versatile',
         messages: [systemMsg, ...messages],
-        temperature: 0.7,
-        max_tokens: 2048
+        temperature: 0.3,
+        max_tokens: 512
       })
     })
 
@@ -40,6 +58,14 @@ Si es codigo, lo formateas bien.`
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content || 'No obtuve respuesta.'
+
+    const searchMatch = content.match(/^SEARCH_QUERY:(.+)$/m)
+    if (searchMatch) {
+      const query = searchMatch[1].trim()
+      const reply = content.replace(/^SEARCH_QUERY:.+$/m, '').trim()
+      const url = `https://listado.mercadolibre.com.ar/${query.replace(/\s+/g, '-').toLowerCase()}`
+      return NextResponse.json({ reply, search: { query, url } })
+    }
 
     return NextResponse.json({ reply: content })
   } catch (error) {

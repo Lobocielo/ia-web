@@ -11,21 +11,20 @@ const MODELS = [
   { id: 'groq/compound', name: 'Compound', desc: 'Herramientas + busqueda', vision: false },
 ]
 
-function formatPrice(amount, currency) {
-  const symbols = { ARS: '$', USD: 'U$S' }
-  return `${symbols[currency] || '$'} ${Math.round(amount).toLocaleString('es-AR')}`
-}
-
-function ProductCard({ item }) {
+function SearchCard({ query, url }) {
   return (
-    <a href={item.permalink} target="_blank" rel="noopener noreferrer" className="product-card">
-      <img src={item.thumbnail} alt={item.title} className="product-img" loading="lazy" />
-      <div className="product-info">
-        <div className="product-title">{item.title}</div>
-        <div className="product-price">{formatPrice(item.price, item.currency)}</div>
-        {item.free_shipping && <span className="product-free">Envio gratis</span>}
-        {item.condition === 'used' && <span className="product-used">Usado</span>}
+    <a href={url} target="_blank" rel="noopener noreferrer" className="search-card">
+      <div className="search-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
       </div>
+      <div className="search-card-info">
+        <div className="search-card-title">MercadoLibre</div>
+        <div className="search-card-query">{query}</div>
+      </div>
+      <div className="search-card-arrow">→</div>
     </a>
   )
 }
@@ -39,13 +38,10 @@ export default function Chat() {
   const [image, setImage] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
   const [showModelPicker, setShowModelPicker] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [showSearch, setShowSearch] = useState(false)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const galleryInputRef = useRef(null)
   const cameraInputRef = useRef(null)
-  const searchInputRef = useRef(null)
 
   const currentModel = MODELS.find(m => m.id === model)
   const supportsVision = currentModel?.vision
@@ -62,10 +58,6 @@ export default function Chat() {
       textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px'
     }
   }, [input])
-
-  useEffect(() => {
-    if (showSearch && searchInputRef.current) searchInputRef.current.focus()
-  }, [showSearch])
 
   const compressImage = (file) => {
     return new Promise((resolve) => {
@@ -101,11 +93,6 @@ export default function Chat() {
   }
 
   const removeImage = () => { setImage(null); setImagePreview(null) }
-
-  const openMercadoLibre = (query) => {
-    const url = `https://listado.mercadolibre.com.ar/${query.replace(/\s+/g, '-').toLowerCase()}`
-    window.open(url, '_blank')
-  }
 
   const sendMessage = async (text) => {
     const msg = text || input.trim()
@@ -148,7 +135,11 @@ export default function Chat() {
         throw new Error(errData.error || 'Error al conectar con la IA')
       }
       const data = await res.json()
-      setMessages([...newMessages, { role: 'assistant', content: data.reply }])
+      setMessages([...newMessages, {
+        role: 'assistant',
+        content: data.reply,
+        search: data.search || null
+      }])
     } catch (err) {
       setError(err.message)
     } finally {
@@ -163,25 +154,13 @@ export default function Chat() {
     }
   }
 
-  const handleSearchKey = (e) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      openMercadoLibre(searchQuery.trim())
-      setShowSearch(false)
-      setSearchQuery('')
-    }
-    if (e.key === 'Escape') {
-      setShowSearch(false)
-      setSearchQuery('')
-    }
-  }
-
   const clearChat = () => { setMessages([]); setError(null) }
 
   const suggestions = [
+    'Busca auriculares bluetooth baratos',
+    'El celular mas barato de Samsung',
     'Explica que es la programacion',
-    'Escribe un poema corto',
-    'Ideas para un proyecto web',
-    'Resuelve: 2x + 5 = 15'
+    'Sillas gamer con envio gratis'
   ]
 
   return (
@@ -189,16 +168,6 @@ export default function Chat() {
       <div className="header">
         <h1>iA Chat</h1>
         <div className="header-actions">
-          <button
-            className="search-toggle"
-            onClick={() => setShowSearch(!showSearch)}
-            title="Buscar en MercadoLibre"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </button>
           <div className="model-selector">
             <button className="model-badge" onClick={() => setShowModelPicker(!showModelPicker)}>
               {currentModel?.name} ▾
@@ -228,38 +197,12 @@ export default function Chat() {
         </div>
       </div>
 
-      {showSearch && (
-        <div className="search-bar">
-          <div className="search-bar-inner">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleSearchKey}
-              placeholder="Buscar en MercadoLibre... (Enter para buscar)"
-              className="search-bar-input"
-            />
-            <button className="search-bar-go" onClick={() => { if (searchQuery.trim()) { openMercadoLibre(searchQuery.trim()); setShowSearch(false); setSearchQuery('') } }}>
-              Buscar
-            </button>
-            <button className="search-bar-close" onClick={() => { setShowSearch(false); setSearchQuery('') }}>
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-
       <div className="messages">
         {messages.length === 0 && !loading && (
           <div className="welcome">
             <div className="welcome-icon">💬</div>
             <h2>Hola, como puedo ayudarte?</h2>
-            <p>Puedo responder preguntas, ayudar con codigo, o buscarte productos. Usa el boton de busqueda para MercadoLibre.</p>
+            <p>Puedo buscar productos en MercadoLibre, responder preguntas, ayudar con codigo y mas.</p>
             <div className="suggestions">
               {suggestions.map((s, i) => (
                 <button key={i} className="suggestion" onClick={() => sendMessage(s)}>
@@ -273,15 +216,18 @@ export default function Chat() {
         {messages.map((msg, i) => (
           <div key={i} className={`message ${msg.role}`}>
             <div className="avatar">{msg.role === 'user' ? '👤' : '✨'}</div>
-            <div className="bubble">
-              {msg.hasImage && msg.role === 'user' && typeof msg.content === 'object' && (
-                <img
-                  src={msg.content.find(c => c.type === 'image_url')?.image_url?.url}
-                  alt="imagen"
-                  className="message-image"
-                />
-              )}
-              {typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || ''}
+            <div className="bubble-wrapper">
+              <div className="bubble">
+                {msg.hasImage && msg.role === 'user' && typeof msg.content === 'object' && (
+                  <img
+                    src={msg.content.find(c => c.type === 'image_url')?.image_url?.url}
+                    alt="imagen"
+                    className="message-image"
+                  />
+                )}
+                {typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || ''}
+              </div>
+              {msg.search && <SearchCard query={msg.search.query} url={msg.search.url} />}
             </div>
           </div>
         ))}
