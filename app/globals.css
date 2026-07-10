@@ -130,6 +130,21 @@ body {
   overflow-wrap: break-word;
 }
 
+.bubble-wrapper {
+  max-width: 85%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message.user .bubble-wrapper {
+  align-items: flex-end;
+}
+
+.msg-products {
+  width: 100%;
+}
+
 .message.user .bubble {
   background: var(--user-bubble);
   color: white;
@@ -691,6 +706,10 @@ body {
     max-width: 88%;
     font-size: 14px;
     padding: 9px 12px;
+  }
+
+  .bubble-wrapper {
+    max-width: 90%;
   }
 
   .avatar {
