@@ -569,6 +569,73 @@ body {
   color: white;
 }
 
+.search-bar {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  animation: fadeIn 0.15s ease;
+}
+
+.search-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid #22c55e;
+  border-radius: 12px;
+  padding: 6px 6px 6px 12px;
+}
+
+.search-bar-inner svg {
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
+.search-bar-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-bar-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.search-bar-go {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.search-bar-go:hover {
+  background: #16a34a;
+}
+
+.search-bar-close {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .search-icon-input {
   display: flex;
   align-items: center;
@@ -846,6 +913,19 @@ body {
   .search-toggle svg {
     width: 16px;
     height: 16px;
+  }
+
+  .search-bar {
+    padding: 8px 12px;
+  }
+
+  .search-bar-input {
+    font-size: 16px;
+  }
+
+  .search-bar-go {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 
