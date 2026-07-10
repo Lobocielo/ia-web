@@ -22,7 +22,8 @@ export default function Chat() {
   const [showModelPicker, setShowModelPicker] = useState(false)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
-  const fileInputRef = useRef(null)
+  const galleryInputRef = useRef(null)
+  const cameraInputRef = useRef(null)
 
   const currentModel = MODELS.find(m => m.id === model)
   const supportsVision = currentModel?.vision
@@ -42,7 +43,7 @@ export default function Chat() {
     }
   }, [input])
 
-  const handleImageUpload = (e) => {
+  const handleImage = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -57,12 +58,12 @@ export default function Chat() {
       setImagePreview(reader.result)
     }
     reader.readAsDataURL(file)
+    e.target.value = ''
   }
 
   const removeImage = () => {
     setImage(null)
     setImagePreview(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const sendMessage = async (text) => {
@@ -141,25 +142,28 @@ export default function Chat() {
     <div className="chat-container">
       <div className="header">
         <h1>iA Chat</h1>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div className="header-actions">
           <div className="model-selector">
             <button className="model-badge" onClick={() => setShowModelPicker(!showModelPicker)}>
               {currentModel?.name} ▾
             </button>
             {showModelPicker && (
-              <div className="model-dropdown">
-                {MODELS.map(m => (
-                  <button
-                    key={m.id}
-                    className={`model-option ${m.id === model ? 'active' : ''}`}
-                    onClick={() => { setModel(m.id); setShowModelPicker(false); removeImage() }}
-                  >
-                    <span className="model-name">{m.name}</span>
-                    <span className="model-desc">{m.desc}</span>
-                    {m.vision && <span className="model-tag">VISION</span>}
-                  </button>
-                ))}
-              </div>
+              <>
+                <div className="model-overlay" onClick={() => setShowModelPicker(false)} />
+                <div className="model-dropdown">
+                  {MODELS.map(m => (
+                    <button
+                      key={m.id}
+                      className={`model-option ${m.id === model ? 'active' : ''}`}
+                      onClick={() => { setModel(m.id); setShowModelPicker(false); removeImage() }}
+                    >
+                      <span className="model-name">{m.name}</span>
+                      <span className="model-desc">{m.desc}</span>
+                      {m.vision && <span className="model-tag">VISION</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
             )}
           </div>
           {messages.length > 0 && (
@@ -173,7 +177,7 @@ export default function Chat() {
           <div className="welcome">
             <div className="welcome-icon">💬</div>
             <h2>Hola, como puedo ayudarte?</h2>
-            <p>Escribime cualquier cosa, o subi una imagen si usas un modelo con vision.</p>
+            <p>Escribime cualquier cosa, o subi/toma una foto si usas un modelo con vision.</p>
             <div className="suggestions">
               {suggestions.map((s, i) => (
                 <button key={i} className="suggestion" onClick={() => sendMessage(s)}>
@@ -233,19 +237,35 @@ export default function Chat() {
           {supportsVision && (
             <>
               <input
-                ref={fileInputRef}
+                ref={galleryInputRef}
                 type="file"
                 accept="image/*"
-                onChange={handleImageUpload}
+                onChange={handleImage}
                 style={{ display: 'none' }}
               />
-              <button className="attach-btn" onClick={() => fileInputRef.current?.click()} title="Subir imagen">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-              </button>
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleImage}
+                style={{ display: 'none' }}
+              />
+              <div className="attach-group">
+                <button className="attach-btn" onClick={() => galleryInputRef.current?.click()} title="Subir imagen">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                  </svg>
+                </button>
+                <button className="attach-btn camera-btn" onClick={() => cameraInputRef.current?.click()} title="Sacar foto">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                </button>
+              </div>
             </>
           )}
           <textarea
