@@ -7,8 +7,12 @@ const MODELS = [
   { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Ultra rapido', vision: false },
   { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision + texto', vision: true },
   { id: 'qwen/qwen3.6-27b', name: 'Qwen 3.6 27B', desc: 'Vision + texto', vision: true },
+  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Razonamiento avanzado', vision: false },
   { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Maximo potencia', vision: false },
+  { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', desc: 'Rapido y capaz', vision: false },
   { id: 'groq/compound', name: 'Compound', desc: 'Herramientas + busqueda', vision: false },
+  { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Herramientas rapido', vision: false },
+  { id: 'allam-2-7b', name: 'Allam 2 7B', desc: 'Arabe y multiidioma', vision: false },
 ]
 
 function SearchCard({ query, url }) {
@@ -26,6 +30,15 @@ function SearchCard({ query, url }) {
       </div>
       <div className="search-card-arrow">→</div>
     </a>
+  )
+}
+
+function GeneratedImage({ prompt, url }) {
+  return (
+    <div className="gen-image-container">
+      <img src={url} alt={prompt} className="gen-image" loading="lazy" />
+      <div className="gen-image-prompt">{prompt}</div>
+    </div>
   )
 }
 
@@ -94,6 +107,18 @@ export default function Chat() {
 
   const removeImage = () => { setImage(null); setImagePreview(null) }
 
+  const generateImage = async (prompt) => {
+    const encoded = encodeURIComponent(prompt)
+    const url = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`
+    try {
+      const res = await fetch(url, { method: 'HEAD' })
+      if (!res.ok) throw new Error('Error al generar')
+      return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`
+    } catch {
+      return null
+    }
+  }
+
   const sendMessage = async (text) => {
     const msg = text || input.trim()
     if (!msg || loading) return
@@ -104,6 +129,33 @@ export default function Chat() {
     }
 
     setError(null)
+
+    const isImageGen = msg.toLowerCase().startsWith('/img ') || msg.toLowerCase().startsWith('/imagen ')
+
+    if (isImageGen) {
+      const prompt = msg.replace(/^\/(img|imagen)\s+/i, '')
+      const userMessage = { role: 'user', content: msg, text: msg }
+      const newMessages = [...messages, userMessage]
+      setMessages(newMessages)
+      setInput('')
+      setLoading(true)
+
+      const imageUrl = await generateImage(prompt)
+      if (imageUrl) {
+        setMessages([...newMessages, {
+          role: 'assistant',
+          content: `Imagen generada: "${prompt}"`,
+          generatedImage: { prompt, url: imageUrl }
+        }])
+      } else {
+        setMessages([...newMessages, {
+          role: 'assistant',
+          content: 'No pude generar la imagen. Intenta de nuevo.'
+        }])
+      }
+      setLoading(false)
+      return
+    }
 
     let userContent
     if (image && supportsVision) {
@@ -202,13 +254,24 @@ export default function Chat() {
           <div className="welcome">
             <div className="welcome-icon">💬</div>
             <h2>Hola, como puedo ayudarte?</h2>
-            <p>Puedo buscar productos en MercadoLibre, responder preguntas, ayudar con codigo y mas.</p>
-            <div className="suggestions">
-              {suggestions.map((s, i) => (
-                <button key={i} className="suggestion" onClick={() => sendMessage(s)}>
-                  {s}
-                </button>
-              ))}
+            <p>Puedo buscar productos, generar imagenes, responder preguntas y mas.</p>
+            <div className="tips-grid">
+              <div className="tip-card">
+                <span className="tip-icon">🔍</span>
+                <span className="tip-text">Busca auriculares bluetooth</span>
+              </div>
+              <div className="tip-card">
+                <span className="tip-icon">🎨</span>
+                <span className="tip-text">/img un gato astronauta</span>
+              </div>
+              <div className="tip-card">
+                <span className="tip-icon">📸</span>
+                <span className="tip-text">Subi una foto y preguntame</span>
+              </div>
+              <div className="tip-card">
+                <span className="tip-icon">💻</span>
+                <span className="tip-text">Escribi codigo en Python</span>
+              </div>
             </div>
           </div>
         )}
@@ -228,6 +291,7 @@ export default function Chat() {
                 {typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || ''}
               </div>
               {msg.search && <SearchCard query={msg.search.query} url={msg.search.url} />}
+              {msg.generatedImage && <GeneratedImage prompt={msg.generatedImage.prompt} url={msg.generatedImage.url} />}
             </div>
           </div>
         ))}
@@ -282,7 +346,7 @@ export default function Chat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={supportsVision ? "Escribi o subi una imagen..." : "Escribi tu mensaje..."}
+            placeholder='Escribi tu mensaje... (/img para generar imagen)'
             rows={1}
             disabled={loading}
           />
