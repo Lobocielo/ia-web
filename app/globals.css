@@ -706,6 +706,14 @@ body {
   border-radius: 12px;
   display: block;
   border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  min-height: 200px;
+  animation: imgLoad 0.5s ease;
+}
+
+@keyframes imgLoad {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .gen-image-prompt {

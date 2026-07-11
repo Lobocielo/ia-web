@@ -107,16 +107,10 @@ export default function Chat() {
 
   const removeImage = () => { setImage(null); setImagePreview(null) }
 
-  const generateImage = async (prompt) => {
+  const generateImage = (prompt) => {
+    const seed = Math.floor(Math.random() * 999999)
     const encoded = encodeURIComponent(prompt)
-    const url = `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`
-    try {
-      const res = await fetch(url, { method: 'HEAD' })
-      if (!res.ok) throw new Error('Error al generar')
-      return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${Date.now()}`
-    } catch {
-      return null
-    }
+    return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${seed}`
   }
 
   const sendMessage = async (text) => {
@@ -140,19 +134,12 @@ export default function Chat() {
       setInput('')
       setLoading(true)
 
-      const imageUrl = await generateImage(prompt)
-      if (imageUrl) {
-        setMessages([...newMessages, {
-          role: 'assistant',
-          content: `Imagen generada: "${prompt}"`,
-          generatedImage: { prompt, url: imageUrl }
-        }])
-      } else {
-        setMessages([...newMessages, {
-          role: 'assistant',
-          content: 'No pude generar la imagen. Intenta de nuevo.'
-        }])
-      }
+      const imageUrl = generateImage(prompt)
+      setMessages([...newMessages, {
+        role: 'assistant',
+        content: `Imagen generada: "${prompt}"`,
+        generatedImage: { prompt, url: imageUrl }
+      }])
       setLoading(false)
       return
     }
