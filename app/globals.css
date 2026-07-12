@@ -642,6 +642,43 @@ body {
   object-fit: cover;
 }
 
+.ref-preview {
+  border: 2px dashed var(--accent);
+  border-radius: 12px;
+  padding: 4px;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.ref-label {
+  position: absolute;
+  top: -8px;
+  left: 8px;
+  background: var(--accent);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+.ref-btn {
+  position: relative;
+}
+
+.ref-btn::after {
+  content: 'Ref';
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 6px;
+  font-weight: 700;
+  background: #f59e0b;
+  color: white;
+  padding: 1px 3px;
+  border-radius: 3px;
+}
+
 .remove-image {
   position: absolute;
   top: -5px;

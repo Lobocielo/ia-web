@@ -102,6 +102,7 @@ export default function Chat() {
   const textareaRef = useRef(null)
   const galleryInputRef = useRef(null)
   const cameraInputRef = useRef(null)
+  const refInputRef = useRef(null)
 
   useEffect(() => {
     const saved = localStorage.getItem('user')
@@ -157,7 +158,20 @@ export default function Chat() {
     e.target.value = ''
   }
 
-  const removeImage = () => { setImage(null); setImagePreview(null) }
+  const removeImage = () => { setImage(null); setImagePreview(null); setRefImage(null); setRefImagePreview(null) }
+
+  const [refImage, setRefImage] = useState(null)
+  const [refImagePreview, setRefImagePreview] = useState(null)
+
+  const handleRefImage = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 20 * 1024 * 1024) { setError('Maximo 20MB'); return }
+    const compressed = await compressImage(file)
+    setRefImage(compressed)
+    setRefImagePreview(compressed)
+    e.target.value = ''
+  }
 
   const generateImage = (prompt) => {
     const seed = Math.floor(Math.random() * 999999)
@@ -187,12 +201,46 @@ export default function Chat() {
       setInput('')
       setLoading(true)
 
-      const imageUrl = generateImage(prompt)
-      setMessages([...newMessages, {
-        role: 'assistant',
-        content: `Imagen generada: "${prompt}"`,
-        generatedImage: { prompt, url: imageUrl }
-      }])
+      if (refImage) {
+        try {
+          const visionModel = 'meta-llama/llama-4-scout-17b-16e-instruct'
+          const visionRes = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              messages: [{ role: 'user', content: [
+                { type: 'text', text: 'Describe esta imagen en detalle en 2-3 oraciones. Enfocate en el estilo, colores, composicion, sujeto y ambiente. Responde SOLO la descripcion, sin texto adicional.' },
+                { type: 'image_url', image_url: { url: refImage } }
+              ]}],
+              model: visionModel,
+              isPremium: false
+            })
+          })
+          const visionData = await visionRes.json()
+          const desc = visionData.reply || prompt
+          const fullPrompt = `${prompt}, estilo similar a: ${desc}`
+          const imageUrl = generateImage(fullPrompt)
+          setMessages([...newMessages, {
+            role: 'assistant',
+            content: `Imagen generada (basada en referencia): "${prompt}"`,
+            generatedImage: { prompt, url: imageUrl }
+          }])
+        } catch {
+          const imageUrl = generateImage(prompt)
+          setMessages([...newMessages, {
+            role: 'assistant',
+            content: `Imagen generada: "${prompt}"`,
+            generatedImage: { prompt, url: imageUrl }
+          }])
+        }
+      } else {
+        const imageUrl = generateImage(prompt)
+        setMessages([...newMessages, {
+          role: 'assistant',
+          content: `Imagen generada: "${prompt}"`,
+          generatedImage: { prompt, url: imageUrl }
+        }])
+      }
       setLoading(false)
       return
     }
@@ -394,28 +442,39 @@ export default function Chat() {
             <button className="remove-image" onClick={removeImage}>✕</button>
           </div>
         )}
+        {refImagePreview && (
+          <div className="image-preview ref-preview">
+            <span className="ref-label">Referencia:</span>
+            <img src={refImagePreview} alt="referencia" />
+            <button className="remove-image" onClick={() => { setRefImage(null); setRefImagePreview(null) }}>✕</button>
+          </div>
+        )}
         <div className="input-wrapper">
-          {supportsVision && (
-            <>
-              <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleImage} style={{ display: 'none' }} />
-              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{ display: 'none' }} />
-              <div className="attach-group">
-                <button className="attach-btn" onClick={() => galleryInputRef.current?.click()} title="Subir imagen">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                  </svg>
-                </button>
-                <button className="attach-btn camera-btn" onClick={() => cameraInputRef.current?.click()} title="Sacar foto">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                    <circle cx="12" cy="13" r="4"></circle>
-                  </svg>
-                </button>
-              </div>
-            </>
-          )}
+          <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleImage} style={{ display: 'none' }} />
+          <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{ display: 'none' }} />
+          <input ref={refInputRef} type="file" accept="image/*" onChange={handleRefImage} style={{ display: 'none' }} />
+          <div className="attach-group">
+            <button className="attach-btn" onClick={() => galleryInputRef.current?.click()} title="Subir imagen para analizar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </button>
+            <button className="attach-btn ref-btn" onClick={() => refInputRef.current?.click()} title="Subir imagen de referencia para /img">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                <path d="M2 17l10 5 10-5"></path>
+                <path d="M2 12l10 5 10-5"></path>
+              </svg>
+            </button>
+            <button className="attach-btn camera-btn" onClick={() => cameraInputRef.current?.click()} title="Sacar foto">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </button>
+          </div>
           <textarea
             ref={textareaRef}
             value={input}
