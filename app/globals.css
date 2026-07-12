@@ -785,6 +785,30 @@ body {
   line-height: 1.3;
 }
 
+.img-model-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.img-model-selector select {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+
+.img-model-selector select:focus {
+  border-color: var(--accent);
+}
+
 .search-icon-input {
   display: flex;
   align-items: center;

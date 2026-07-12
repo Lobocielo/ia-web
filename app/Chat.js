@@ -80,6 +80,7 @@ export default function Chat() {
   const [image, setImage] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
   const [showModelPicker, setShowModelPicker] = useState(false)
+  const [imgModel, setImgModel] = useState('flux-realism')
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const galleryInputRef = useRef(null)
@@ -140,7 +141,7 @@ export default function Chat() {
     const seed = Math.floor(Math.random() * 999999)
     const enhancedPrompt = `high quality, detailed, sharp, 4k: ${prompt}`
     const encoded = encodeURIComponent(enhancedPrompt)
-    return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${seed}`
+    return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${seed}&model=${imgModel}`
   }
 
   const sendMessage = async (text) => {
@@ -289,6 +290,16 @@ export default function Chat() {
                 <span className="tip-icon">💻</span>
                 <span className="tip-text">Escribi codigo en Python</span>
               </div>
+            </div>
+            <div className="img-model-selector">
+              <label>Modelo de imagen:</label>
+              <select value={imgModel} onChange={(e) => setImgModel(e.target.value)}>
+                <option value="flux-realism">Flux Realism</option>
+                <option value="flux">Flux</option>
+                <option value="flux-anime">Flux Anime</option>
+                <option value="flux-3d">Flux 3D</option>
+                <option value="turbo">Turbo</option>
+              </select>
             </div>
           </div>
         )}
