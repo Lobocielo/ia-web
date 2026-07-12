@@ -268,7 +268,7 @@ export default function Chat() {
                           <span className="model-name">{m.name}</span>
                           <span className="model-desc">{m.desc}</span>
                           {m.vision && <span className="model-tag">VISION</span>}
-                          {m.type === 'stt' && <span className="model-tag tag-stt}>STT</span>}
+                          {m.type === 'stt' && <span className="model-tag tag-stt">STT</span>}
                           {m.type === 'tts' && <span className="model-tag tag-tts">TTS</span>}
                           {m.type === 'agent' && <span className="model-tag tag-agent">AGENT</span>}
                         </button>
