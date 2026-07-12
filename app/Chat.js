@@ -3,28 +3,28 @@
 import { useState, useRef, useEffect } from 'react'
 
 const MODELS = [
-  // === CHAT GRATIS (con censura de Meta) ===
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Chat general - con censura', vision: false, cat: 'Chat Gratis', type: 'llm' },
-  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Ultra rapido - con censura', vision: false, cat: 'Chat Gratis', type: 'llm' },
-  { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision + chat - con censura', vision: true, cat: 'Chat Gratis', type: 'llm' },
+  // === CHAT GRATIS (Groq - con censura) ===
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Gratis - con censura', vision: false, cat: 'Gratis (Groq)', type: 'llm' },
+  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Gratis - ultra rapido', vision: false, cat: 'Gratis (Groq)', type: 'llm' },
+  { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Gratis - vision + chat', vision: true, cat: 'Gratis (Groq)', type: 'llm' },
 
-  // === CHAT PREMIUM (sin censura) ===
-  { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Sin censura - maximo potencia', vision: false, cat: 'Chat Premium', type: 'llm', premium: true },
-  { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', desc: 'Sin censura - rapido', vision: false, cat: 'Chat Premium', type: 'llm', premium: true },
-  { id: 'qwen/qwen3.6-27b', name: 'Qwen 3.6 27B', desc: 'Sin censura - vision + texto', vision: true, cat: 'Chat Premium', type: 'llm', premium: true },
-  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Sin censura - razonamiento', vision: false, cat: 'Chat Premium', type: 'llm', premium: true },
-  { id: 'allam-2-7b', name: 'ALLaM 2 7B', desc: 'Sin censura - multiidioma', vision: false, cat: 'Chat Premium', type: 'llm', premium: true },
+  // === CHAT PREMIUM (OpenRouter - SIN CENSURA) ===
+  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', desc: 'Sin censura - roleplay, cualquier tema', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
+  { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', desc: 'Sin censura - el mas grande', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
+  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition', name: 'Dolphin Venice', desc: 'Sin censura - 100% libre', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
+  { id: 'deepseek/deepseek-v4-flash', name: 'DeepSeek V4 Flash', desc: 'Sin censura - rapido y potente', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
+  { id: 'mistralai/mistral-large-2512', name: 'Mistral Large 3', desc: 'Sin censura - Mistral oficial', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
 
-  // === AGENTES (gratis) ===
+  // === AGENTES (Groq - gratis) ===
   { id: 'groq/compound', name: 'Compound', desc: 'Agente: busca + ejecuta codigo', vision: false, cat: 'Agentes', type: 'agent' },
   { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Agente rapido', vision: false, cat: 'Agentes', type: 'agent' },
 
-  // === SEGURIDAD (premium) ===
-  { id: 'openai/gpt-oss-safeguard-20b', name: 'GPT Safeguard 20B', desc: 'Filtra contenido peligroso', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
-  { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Prompt Guard 22M', desc: 'Detecta prompt injection', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
-  { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 86M', desc: 'Detecta inyeccion de prompts', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
+  // === SEGURIDAD (Groq - gratis) ===
+  { id: 'openai/gpt-oss-safeguard-20b', name: 'GPT Safeguard 20B', desc: 'Filtra contenido peligroso', vision: false, cat: 'Seguridad', type: 'safety' },
+  { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Prompt Guard 22M', desc: 'Detecta prompt injection', vision: false, cat: 'Seguridad', type: 'safety' },
+  { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 86M', desc: 'Detecta inyeccion de prompts', vision: false, cat: 'Seguridad', type: 'safety' },
 
-  // === AUDIO (gratis) ===
+  // === AUDIO (Groq - gratis) ===
   { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'Transcribe audio a texto', vision: false, cat: 'Audio', type: 'stt' },
   { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'Transcribe audio rapido', vision: false, cat: 'Audio', type: 'stt' },
   { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', desc: 'Texto a voz en ingles', vision: false, cat: 'Audio', type: 'tts' },
@@ -268,7 +268,7 @@ export default function Chat() {
               <>
                 <div className="model-overlay" onClick={() => setShowModelPicker(false)} />
                 <div className="model-dropdown">
-                  {['Chat Gratis', 'Chat Premium', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
+                  {['Gratis (Groq)', 'Premium (OpenRouter)', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
                     <div key={cat}>
                       <div className="model-cat-header">{cat}</div>
                       {MODELS.filter(m => m.cat === cat).map(m => (
