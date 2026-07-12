@@ -34,9 +34,38 @@ function SearchCard({ query, url }) {
 }
 
 function GeneratedImage({ prompt, url }) {
+  const [loaded, setLoaded] = useState(false)
+  const [error, setError] = useState(false)
+
+  const downloadImage = async () => {
+    try {
+      const res = await fetch(url)
+      const blob = await res.blob()
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `imagen-${Date.now()}.png`
+      a.click()
+    } catch {}
+  }
+
   return (
     <div className="gen-image-container">
-      <img src={url} alt={prompt} className="gen-image" loading="lazy" />
+      {!loaded && !error && <div className="gen-image-loading">Generando imagen...</div>}
+      {error && <div className="gen-image-loading" style={{color:'var(--error)'}}>Error al generar. Intenta de nuevo.</div>}
+      <img
+        src={url}
+        alt={prompt}
+        className="gen-image"
+        loading="lazy"
+        onLoad={() => setLoaded(true)}
+        onError={() => setError(true)}
+        style={{display: error ? 'none' : 'block'}}
+      />
+      {loaded && (
+        <div className="gen-image-actions">
+          <button onClick={downloadImage} className="gen-image-download">Descargar</button>
+        </div>
+      )}
       <div className="gen-image-prompt">{prompt}</div>
     </div>
   )
@@ -109,8 +138,9 @@ export default function Chat() {
 
   const generateImage = (prompt) => {
     const seed = Math.floor(Math.random() * 999999)
-    const encoded = encodeURIComponent(prompt)
-    return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${seed}`
+    const enhancedPrompt = `high quality, detailed, sharp: ${prompt}`
+    const encoded = encodeURIComponent(enhancedPrompt)
+    return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${seed}&model=flux&enhance=true`
   }
 
   const sendMessage = async (text) => {
