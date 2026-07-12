@@ -445,6 +445,20 @@ body {
   overflow-y: auto;
 }
 
+.model-cat-header {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  padding: 10px 10px 4px;
+  border-top: 1px solid var(--border);
+}
+
+.model-cat-header:first-child {
+  border-top: none;
+}
+
 .model-option {
   display: flex;
   align-items: center;

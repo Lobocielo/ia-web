@@ -3,16 +3,15 @@
 import { useState, useRef, useEffect } from 'react'
 
 const MODELS = [
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Potente y equilibrado', vision: false },
-  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Ultra rapido', vision: false },
-  { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision + texto', vision: true },
-  { id: 'qwen/qwen3.6-27b', name: 'Qwen 3.6 27B', desc: 'Vision + texto', vision: true },
-  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Razonamiento avanzado', vision: false },
-  { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Maximo potencia', vision: false },
-  { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', desc: 'Rapido y capaz', vision: false },
-  { id: 'groq/compound', name: 'Compound', desc: 'Herramientas + busqueda', vision: false },
-  { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Herramientas rapido', vision: false },
-  { id: 'allam-2-7b', name: 'Allam 2 7B', desc: 'Arabe y multiidioma', vision: false },
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Potente y equilibrado', vision: false, cat: 'Meta' },
+  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Ultra rapido', vision: false, cat: 'Meta' },
+  { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision + texto', vision: true, cat: 'Meta' },
+  { id: 'qwen/qwen3.6-27b', name: 'Qwen 3.6 27B', desc: 'Vision + texto', vision: true, cat: 'Qwen' },
+  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Razonamiento avanzado', vision: false, cat: 'Qwen' },
+  { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Maximo potencia + browser', vision: false, cat: 'OpenAI' },
+  { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', desc: 'Rapido + browser search', vision: false, cat: 'OpenAI' },
+  { id: 'groq/compound', name: 'Compound', desc: 'Agente + busqueda + codigo', vision: false, cat: 'Groq' },
+  { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Agente rapido', vision: false, cat: 'Groq' },
 ]
 
 function SearchCard({ query, url }) {
@@ -246,16 +245,21 @@ export default function Chat() {
               <>
                 <div className="model-overlay" onClick={() => setShowModelPicker(false)} />
                 <div className="model-dropdown">
-                  {MODELS.map(m => (
-                    <button
-                      key={m.id}
-                      className={`model-option ${m.id === model ? 'active' : ''}`}
-                      onClick={() => { setModel(m.id); setShowModelPicker(false); removeImage() }}
-                    >
-                      <span className="model-name">{m.name}</span>
-                      <span className="model-desc">{m.desc}</span>
-                      {m.vision && <span className="model-tag">VISION</span>}
-                    </button>
+                  {['Meta', 'OpenAI', 'Qwen', 'Groq'].map(cat => (
+                    <div key={cat}>
+                      <div className="model-cat-header">{cat}</div>
+                      {MODELS.filter(m => m.cat === cat).map(m => (
+                        <button
+                          key={m.id}
+                          className={`model-option ${m.id === model ? 'active' : ''}`}
+                          onClick={() => { setModel(m.id); setShowModelPicker(false); removeImage() }}
+                        >
+                          <span className="model-name">{m.name}</span>
+                          <span className="model-desc">{m.desc}</span>
+                          {m.vision && <span className="model-tag">VISION</span>}
+                        </button>
+                      ))}
+                    </div>
                   ))}
                 </div>
               </>
