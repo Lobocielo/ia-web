@@ -3,32 +3,32 @@
 import { useState, useRef, useEffect } from 'react'
 
 const MODELS = [
-  // === CHAT (LLM) ===
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Chat general, potente y equilibrado', vision: false, cat: 'Chat', type: 'llm' },
-  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Chat ultra rapido, respuestas cortas', vision: false, cat: 'Chat', type: 'llm' },
-  { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision: entiende fotos + chat', vision: true, cat: 'Chat', type: 'llm' },
-  { id: 'qwen/qwen3.6-27b', name: 'Qwen 3.6 27B', desc: 'Vision: entiende fotos + chat', vision: true, cat: 'Chat', type: 'llm' },
-  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Razonamiento avanzado, matematicas, logica', vision: false, cat: 'Chat', type: 'llm' },
-  { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Maximo potencia, puede buscar en internet', vision: false, cat: 'Chat', type: 'llm' },
-  { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', desc: 'Rapido, puede buscar en internet', vision: false, cat: 'Chat', type: 'llm' },
-  { id: 'allam-2-7b', name: 'ALLaM 2 7B', desc: 'Optimizado para arabe y multiidioma', vision: false, cat: 'Chat', type: 'llm' },
+  // === CHAT GRATIS (con censura de Meta) ===
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Chat general - con censura', vision: false, cat: 'Chat Gratis', type: 'llm' },
+  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Ultra rapido - con censura', vision: false, cat: 'Chat Gratis', type: 'llm' },
+  { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision + chat - con censura', vision: true, cat: 'Chat Gratis', type: 'llm' },
 
-  // === AGENTES (usan herramientas automaticamente) ===
-  { id: 'groq/compound', name: 'Compound', desc: 'Agente: busca en web, ejecuta codigo, usa herramientas solo', vision: false, cat: 'Agentes', type: 'agent' },
-  { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Agente rapido: busca y ejecuta codigo', vision: false, cat: 'Agentes', type: 'agent' },
+  // === CHAT PREMIUM (sin censura) ===
+  { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Sin censura - maximo potencia', vision: false, cat: 'Chat Premium', type: 'llm', premium: true },
+  { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', desc: 'Sin censura - rapido', vision: false, cat: 'Chat Premium', type: 'llm', premium: true },
+  { id: 'qwen/qwen3.6-27b', name: 'Qwen 3.6 27B', desc: 'Sin censura - vision + texto', vision: true, cat: 'Chat Premium', type: 'llm', premium: true },
+  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Sin censura - razonamiento', vision: false, cat: 'Chat Premium', type: 'llm', premium: true },
+  { id: 'allam-2-7b', name: 'ALLaM 2 7B', desc: 'Sin censura - multiidioma', vision: false, cat: 'Chat Premium', type: 'llm', premium: true },
 
-  // === SEGURIDAD (premium - requiere cuenta) ===
-  { id: 'openai/gpt-oss-safeguard-20b', name: 'GPT Safeguard 20B', desc: 'Analiza y filtra contenido peligroso, spam, abuso', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
-  { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Prompt Guard 22M', desc: 'Detecta prompt injection y jailbreaks', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
-  { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 86M', desc: 'Version grande: detecta inyeccion de prompts', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
+  // === AGENTES (gratis) ===
+  { id: 'groq/compound', name: 'Compound', desc: 'Agente: busca + ejecuta codigo', vision: false, cat: 'Agentes', type: 'agent' },
+  { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Agente rapido', vision: false, cat: 'Agentes', type: 'agent' },
 
-  // === SPEECH-TO-TEXT (audio a texto) ===
-  { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'STT: transcribe audio a texto (100 idiomas)', vision: false, cat: 'Audio', type: 'stt' },
-  { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'STT: transcribe audio rapido', vision: false, cat: 'Audio', type: 'stt' },
+  // === SEGURIDAD (premium) ===
+  { id: 'openai/gpt-oss-safeguard-20b', name: 'GPT Safeguard 20B', desc: 'Filtra contenido peligroso', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
+  { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Prompt Guard 22M', desc: 'Detecta prompt injection', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
+  { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 86M', desc: 'Detecta inyeccion de prompts', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
 
-  // === TEXT-TO-SPEECH (texto a audio) ===
-  { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', desc: 'TTS: convierte texto a voz en ingles', vision: false, cat: 'Audio', type: 'tts' },
-  { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus Arabic', desc: 'TTS: convierte texto a voz en arabe', vision: false, cat: 'Audio', type: 'tts' },
+  // === AUDIO (gratis) ===
+  { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'Transcribe audio a texto', vision: false, cat: 'Audio', type: 'stt' },
+  { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'Transcribe audio rapido', vision: false, cat: 'Audio', type: 'stt' },
+  { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', desc: 'Texto a voz en ingles', vision: false, cat: 'Audio', type: 'tts' },
+  { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus Arabic', desc: 'Texto a voz en arabe', vision: false, cat: 'Audio', type: 'tts' },
 ]
 
 function SearchCard({ query, url }) {
@@ -220,7 +220,7 @@ export default function Chat() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: apiMessages, model })
+        body: JSON.stringify({ messages: apiMessages, model, isPremium: user?.premium || false })
       })
       if (!res.ok) {
         const errData = await res.json()
@@ -268,7 +268,7 @@ export default function Chat() {
               <>
                 <div className="model-overlay" onClick={() => setShowModelPicker(false)} />
                 <div className="model-dropdown">
-                  {['Chat', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
+                  {['Chat Gratis', 'Chat Premium', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
                     <div key={cat}>
                       <div className="model-cat-header">{cat}</div>
                       {MODELS.filter(m => m.cat === cat).map(m => (

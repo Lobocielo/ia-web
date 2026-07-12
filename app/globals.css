@@ -459,6 +459,10 @@ body {
   border-top: none;
 }
 
+.model-cat-header:has(+ .model-option.premium-locked) {
+  color: #f59e0b;
+}
+
 .model-option {
   display: flex;
   align-items: center;
