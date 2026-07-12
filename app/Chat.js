@@ -161,9 +161,9 @@ export default function Chat() {
 
   const generateImage = (prompt) => {
     const seed = Math.floor(Math.random() * 999999)
-    const enhancedPrompt = `high quality, detailed, sharp, 4k: ${prompt}`
+    const enhancedPrompt = `high quality, detailed, sharp, 4k, professional photography, masterpiece: ${prompt}`
     const encoded = encodeURIComponent(enhancedPrompt)
-    return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${seed}&model=${imgModel}`
+    return `https://image.pollinations.ai/prompt/${encoded}?width=1536&height=1024&nologo=true&seed=${seed}&model=${imgModel}`
   }
 
   const sendMessage = async (text) => {
@@ -276,7 +276,7 @@ export default function Chat() {
                           key={m.id}
                           className={`model-option ${m.id === model ? 'active' : ''} ${m.premium && !user ? 'premium-locked' : ''}`}
                           onClick={() => {
-                            if (m.premium && !user) { alert('Necesitas una cuenta premium para usar este modelo. Registrate en /register'); return }
+                            if (m.premium && !user) { window.location.href = '/login'; return }
                             setModel(m.id); setShowModelPicker(false); removeImage()
                           }}
                         >
