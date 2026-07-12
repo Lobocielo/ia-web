@@ -3,15 +3,26 @@
 import { useState, useRef, useEffect } from 'react'
 
 const MODELS = [
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Potente y equilibrado', vision: false, cat: 'Meta' },
-  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Ultra rapido', vision: false, cat: 'Meta' },
-  { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision + texto', vision: true, cat: 'Meta' },
-  { id: 'qwen/qwen3.6-27b', name: 'Qwen 3.6 27B', desc: 'Vision + texto', vision: true, cat: 'Qwen' },
-  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Razonamiento avanzado', vision: false, cat: 'Qwen' },
-  { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Maximo potencia + browser', vision: false, cat: 'OpenAI' },
-  { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', desc: 'Rapido + browser search', vision: false, cat: 'OpenAI' },
-  { id: 'groq/compound', name: 'Compound', desc: 'Agente + busqueda + codigo', vision: false, cat: 'Groq' },
-  { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Agente rapido', vision: false, cat: 'Groq' },
+  // === CHAT (LLM) ===
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Chat general, potente y equilibrado', vision: false, cat: 'Chat', type: 'llm' },
+  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Chat ultra rapido, respuestas cortas', vision: false, cat: 'Chat', type: 'llm' },
+  { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision: entiende fotos + chat', vision: true, cat: 'Chat', type: 'llm' },
+  { id: 'qwen/qwen3.6-27b', name: 'Qwen 3.6 27B', desc: 'Vision: entiende fotos + chat', vision: true, cat: 'Chat', type: 'llm' },
+  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Razonamiento avanzado, matematicas, logica', vision: false, cat: 'Chat', type: 'llm' },
+  { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Maximo potencia, puede buscar en internet', vision: false, cat: 'Chat', type: 'llm' },
+  { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', desc: 'Rapido, puede buscar en internet', vision: false, cat: 'Chat', type: 'llm' },
+
+  // === AGENTES (usan herramientas automaticamente) ===
+  { id: 'groq/compound', name: 'Compound', desc: 'Agente: busca en web, ejecuta codigo, usa herramientas solo', vision: false, cat: 'Agentes', type: 'agent' },
+  { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Agente rapido: busca y ejecuta codigo', vision: false, cat: 'Agentes', type: 'agent' },
+
+  // === SPEECH-TO-TEXT (audio a texto) ===
+  { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'STT: transcribe audio a texto (100 idiomas)', vision: false, cat: 'Audio', type: 'stt' },
+  { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'STT: transcribe audio rapido', vision: false, cat: 'Audio', type: 'stt' },
+
+  // === TEXT-TO-SPEECH (texto a audio) ===
+  { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', desc: 'TTS: convierte texto a voz en ingles', vision: false, cat: 'Audio', type: 'tts' },
+  { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus Arabic', desc: 'TTS: convierte texto a voz en arabe', vision: false, cat: 'Audio', type: 'tts' },
 ]
 
 function SearchCard({ query, url }) {
@@ -245,7 +256,7 @@ export default function Chat() {
               <>
                 <div className="model-overlay" onClick={() => setShowModelPicker(false)} />
                 <div className="model-dropdown">
-                  {['Meta', 'OpenAI', 'Qwen', 'Groq'].map(cat => (
+                  {['Chat', 'Agentes', 'Audio'].map(cat => (
                     <div key={cat}>
                       <div className="model-cat-header">{cat}</div>
                       {MODELS.filter(m => m.cat === cat).map(m => (
@@ -257,6 +268,9 @@ export default function Chat() {
                           <span className="model-name">{m.name}</span>
                           <span className="model-desc">{m.desc}</span>
                           {m.vision && <span className="model-tag">VISION</span>}
+                          {m.type === 'stt' && <span className="model-tag tag-stt}>STT</span>}
+                          {m.type === 'tts' && <span className="model-tag tag-tts">TTS</span>}
+                          {m.type === 'agent' && <span className="model-tag tag-agent">AGENT</span>}
                         </button>
                       ))}
                     </div>

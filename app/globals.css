@@ -508,6 +508,18 @@ body {
   flex-shrink: 0;
 }
 
+.model-tag.tag-stt {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.model-tag.tag-tts {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.model-tag.tag-agent {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
 .image-preview {
   position: relative;
   display: inline-block;
