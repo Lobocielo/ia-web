@@ -1295,7 +1295,31 @@ body {
   font-size: 28px;
   font-weight: 800;
   color: var(--accent);
-  margin-bottom: 24px;
+  margin-bottom: 12px;
+}
+
+.auth-badge-admin {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+
+.auth-badge-user {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: white;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 16px;
 }
 
 .auth-card h1 {

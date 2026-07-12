@@ -299,13 +299,13 @@ export default function Chat() {
             <div className="user-info">
               <span className="user-name">{user.username}</span>
               {user.premium && <span className="user-premium">PREMIUM</span>}
-              {user.role === 'admin' && <a href="/admin" className="admin-link">Admin</a>}
+              {user.role === 'admin' && <a href="/admin" className="admin-link">Panel Admin</a>}
               <button className="logout-btn" onClick={() => { localStorage.removeItem('user'); setUser(null) }}>Salir</button>
             </div>
           ) : (
             <div className="auth-buttons">
               <a href="/login" className="login-btn">Iniciar sesion</a>
-              <a href="/register" className="register-btn">Registrarse</a>
+              <a href="/admin-login" className="admin-link">Admin</a>
             </div>
           )}
           {messages.length > 0 && (
