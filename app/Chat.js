@@ -17,6 +17,11 @@ const MODELS = [
   { id: 'groq/compound', name: 'Compound', desc: 'Agente: busca en web, ejecuta codigo, usa herramientas solo', vision: false, cat: 'Agentes', type: 'agent' },
   { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Agente rapido: busca y ejecuta codigo', vision: false, cat: 'Agentes', type: 'agent' },
 
+  // === SEGURIDAD (premium - requiere cuenta) ===
+  { id: 'openai/gpt-oss-safeguard-20b', name: 'GPT Safeguard 20B', desc: 'Analiza y filtra contenido peligroso, spam, abuso', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
+  { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Prompt Guard 22M', desc: 'Detecta prompt injection y jailbreaks', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
+  { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 86M', desc: 'Version grande: detecta inyeccion de prompts', vision: false, cat: 'Seguridad', type: 'safety', premium: true },
+
   // === SPEECH-TO-TEXT (audio a texto) ===
   { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'STT: transcribe audio a texto (100 idiomas)', vision: false, cat: 'Audio', type: 'stt' },
   { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'STT: transcribe audio rapido', vision: false, cat: 'Audio', type: 'stt' },
@@ -92,10 +97,16 @@ export default function Chat() {
   const [imagePreview, setImagePreview] = useState(null)
   const [showModelPicker, setShowModelPicker] = useState(false)
   const [imgModel, setImgModel] = useState('flux-realism')
+  const [user, setUser] = useState(null)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
   const galleryInputRef = useRef(null)
   const cameraInputRef = useRef(null)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('user')
+    if (saved) setUser(JSON.parse(saved))
+  }, [])
 
   const currentModel = MODELS.find(m => m.id === model)
   const supportsVision = currentModel?.vision
@@ -257,14 +268,17 @@ export default function Chat() {
               <>
                 <div className="model-overlay" onClick={() => setShowModelPicker(false)} />
                 <div className="model-dropdown">
-                  {['Chat', 'Agentes', 'Audio'].map(cat => (
+                  {['Chat', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
                     <div key={cat}>
                       <div className="model-cat-header">{cat}</div>
                       {MODELS.filter(m => m.cat === cat).map(m => (
                         <button
                           key={m.id}
-                          className={`model-option ${m.id === model ? 'active' : ''}`}
-                          onClick={() => { setModel(m.id); setShowModelPicker(false); removeImage() }}
+                          className={`model-option ${m.id === model ? 'active' : ''} ${m.premium && !user ? 'premium-locked' : ''}`}
+                          onClick={() => {
+                            if (m.premium && !user) { alert('Necesitas una cuenta premium para usar este modelo. Registrate en /register'); return }
+                            setModel(m.id); setShowModelPicker(false); removeImage()
+                          }}
                         >
                           <span className="model-name">{m.name}</span>
                           <span className="model-desc">{m.desc}</span>
@@ -272,6 +286,7 @@ export default function Chat() {
                           {m.type === 'stt' && <span className="model-tag tag-stt">STT</span>}
                           {m.type === 'tts' && <span className="model-tag tag-tts">TTS</span>}
                           {m.type === 'agent' && <span className="model-tag tag-agent">AGENT</span>}
+                          {m.premium && <span className="model-tag tag-premium">PREMIUM</span>}
                         </button>
                       ))}
                     </div>
@@ -280,6 +295,15 @@ export default function Chat() {
               </>
             )}
           </div>
+          {user ? (
+            <div className="user-info">
+              <span className="user-name">{user.username}</span>
+              {user.premium && <span className="user-premium">PREMIUM</span>}
+              <button className="logout-btn" onClick={() => { localStorage.removeItem('user'); setUser(null) }}>Salir</button>
+            </div>
+          ) : (
+            <a href="/login" className="login-btn">Iniciar sesion</a>
+          )}
           {messages.length > 0 && (
             <button className="new-chat-btn" onClick={clearChat}>+ Nuevo</button>
           )}
