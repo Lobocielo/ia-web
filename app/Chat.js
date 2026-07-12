@@ -37,15 +37,15 @@ function GeneratedImage({ prompt, url }) {
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(false)
 
-  const downloadImage = async () => {
-    try {
-      const res = await fetch(url)
-      const blob = await res.blob()
-      const a = document.createElement('a')
-      a.href = URL.createObjectURL(blob)
-      a.download = `imagen-${Date.now()}.png`
-      a.click()
-    } catch {}
+  const downloadImage = () => {
+    const a = document.createElement('a')
+    a.href = url
+    a.target = '_blank'
+    a.rel = 'noopener noreferrer'
+    a.download = `imagen-${Date.now()}.png`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
   }
 
   return (
@@ -138,9 +138,9 @@ export default function Chat() {
 
   const generateImage = (prompt) => {
     const seed = Math.floor(Math.random() * 999999)
-    const enhancedPrompt = `high quality, detailed, sharp: ${prompt}`
+    const enhancedPrompt = `high quality, detailed, sharp, 4k: ${prompt}`
     const encoded = encodeURIComponent(enhancedPrompt)
-    return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${seed}&model=flux&enhance=true`
+    return `https://image.pollinations.ai/prompt/${encoded}?width=1024&height=1024&nologo=true&seed=${seed}`
   }
 
   const sendMessage = async (text) => {
