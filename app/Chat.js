@@ -299,10 +299,14 @@ export default function Chat() {
             <div className="user-info">
               <span className="user-name">{user.username}</span>
               {user.premium && <span className="user-premium">PREMIUM</span>}
+              {user.role === 'admin' && <a href="/admin" className="admin-link">Admin</a>}
               <button className="logout-btn" onClick={() => { localStorage.removeItem('user'); setUser(null) }}>Salir</button>
             </div>
           ) : (
-            <a href="/login" className="login-btn">Iniciar sesion</a>
+            <div className="auth-buttons">
+              <a href="/login" className="login-btn">Iniciar sesion</a>
+              <a href="/register" className="register-btn">Registrarse</a>
+            </div>
           )}
           {messages.length > 0 && (
             <button className="new-chat-btn" onClick={clearChat}>+ Nuevo</button>

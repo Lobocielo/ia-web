@@ -10,6 +10,7 @@ export default function AdminPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [authenticated, setAuthenticated] = useState(false)
 
   const loadUsers = async () => {
     if (!adminKey) return
@@ -20,11 +21,11 @@ export default function AdminPage() {
         body: JSON.stringify({ action: 'list-users', adminKey })
       })
       const data = await res.json()
-      if (data.users) setUsers(data.users)
+      if (data.users) { setUsers(data.users); setAuthenticated(true) }
     } catch {}
   }
 
-  useEffect(() => { if (adminKey) loadUsers() }, [adminKey])
+  useEffect(() => { if (adminKey && adminKey.length >= 6) loadUsers() }, [adminKey])
 
   const createUser = async (e) => {
     e.preventDefault()
@@ -37,15 +38,15 @@ export default function AdminPage() {
       })
       const data = await res.json()
       if (data.error) { setError(data.error); setLoading(false); return }
-      setSuccess(`Usuario "${newUser}" creado!`)
+      setSuccess(`Usuario "${newUser}" creado exitosamente!`)
       setNewUser(''); setNewPass('')
       loadUsers()
       setLoading(false)
-    } catch { setError('Error'); setLoading(false) }
+    } catch { setError('Error de conexion'); setLoading(false) }
   }
 
-  const deleteUser = async (id) => {
-    if (!confirm('Eliminar este usuario?')) return
+  const deleteUser = async (id, name) => {
+    if (!confirm(`Eliminar usuario "${name}"?`)) return
     await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -63,48 +64,86 @@ export default function AdminPage() {
     loadUsers()
   }
 
+  const handleAuth = (e) => {
+    e.preventDefault()
+    loadUsers()
+  }
+
   return (
     <div className="auth-page">
-      <div className="auth-card" style={{maxWidth: 500}}>
+      <div className="admin-panel">
         <div className="auth-logo">iA Chat</div>
-        <h1>Panel de Admin</h1>
+        <h1>Panel de Administracion</h1>
+        <p className="admin-subtitle">Gestiona cuentas de usuarios premium</p>
 
-        <div className="admin-section">
-          <label>Clave de administrador:</label>
-          <input type="password" placeholder="Clave admin" value={adminKey} onChange={e => setAdminKey(e.target.value)} />
-        </div>
-
-        {adminKey && (
+        {!authenticated ? (
+          <form onSubmit={handleAuth} className="admin-auth-form">
+            <div className="admin-auth-input">
+              <label>Clave de administrador:</label>
+              <input type="password" placeholder="Ingresa la clave admin" value={adminKey} onChange={e => setAdminKey(e.target.value)} />
+            </div>
+            <button type="submit" className="admin-auth-btn">Acceder</button>
+            {error && <div className="auth-error">{error}</div>}
+          </form>
+        ) : (
           <>
+            <div className="admin-stats">
+              <div className="admin-stat">
+                <span className="admin-stat-number">{users.length}</span>
+                <span className="admin-stat-label">Usuarios</span>
+              </div>
+              <div className="admin-stat">
+                <span className="admin-stat-number">{users.filter(u => u.premium).length}</span>
+                <span className="admin-stat-label">Premium</span>
+              </div>
+              <div className="admin-stat">
+                <span className="admin-stat-number">{users.filter(u => u.role === 'admin').length}</span>
+                <span className="admin-stat-label">Admins</span>
+              </div>
+            </div>
+
             <div className="admin-section">
-              <h3>Crear usuario</h3>
+              <h3>Crear nuevo usuario</h3>
               <form onSubmit={createUser} className="admin-form">
-                <input type="text" placeholder="Nuevo usuario" value={newUser} onChange={e => setNewUser(e.target.value)} required />
-                <input type="password" placeholder="Contrasena" value={newPass} onChange={e => setNewPass(e.target.value)} required />
-                <button type="submit" disabled={loading}>{loading ? 'Creando...' : 'Crear'}</button>
+                <input type="text" placeholder="Nombre de usuario" value={newUser} onChange={e => setNewUser(e.target.value)} required minLength={3} />
+                <input type="password" placeholder="Contrasena" value={newPass} onChange={e => setNewPass(e.target.value)} required minLength={4} />
+                <button type="submit" disabled={loading} className="admin-create-btn">
+                  {loading ? 'Creando...' : '+ Crear usuario'}
+                </button>
               </form>
               {error && <div className="auth-error">{error}</div>}
               {success && <div className="auth-success">{success}</div>}
             </div>
 
             <div className="admin-section">
-              <h3>Usuarios ({users.length})</h3>
+              <h3>Usuarios registrados</h3>
               <div className="admin-users">
+                {users.length === 0 && <p className="admin-empty">No hay usuarios aun</p>}
                 {users.map(u => (
                   <div key={u.id} className="admin-user">
                     <div className="admin-user-info">
-                      <strong>{u.username}</strong>
+                      <span className="admin-user-avatar">{u.username[0].toUpperCase()}</span>
+                      <div className="admin-user-details">
+                        <strong>{u.username}</strong>
+                        <span className="admin-user-date">Creado: {u.created || 'N/A'}</span>
+                      </div>
                       <span className={`admin-badge ${u.role}`}>{u.role}</span>
                       {u.premium && <span className="admin-badge premium">PREMIUM</span>}
                     </div>
                     <div className="admin-user-actions">
-                      <button onClick={() => togglePremium(u.id)} className="admin-btn-sm">{u.premium ? 'Quitar Premium' : 'Dar Premium'}</button>
-                      {u.role !== 'admin' && <button onClick={() => deleteUser(u.id)} className="admin-btn-sm danger">Eliminar</button>}
+                      <button onClick={() => togglePremium(u.id)} className="admin-btn-sm">
+                        {u.premium ? 'Quitar Premium' : 'Dar Premium'}
+                      </button>
+                      {u.role !== 'admin' && (
+                        <button onClick={() => deleteUser(u.id, u.username)} className="admin-btn-sm danger">Eliminar</button>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
+
+            <a href="/" className="admin-back">Volver al chat</a>
           </>
         )}
       </div>
