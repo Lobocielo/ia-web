@@ -306,7 +306,25 @@ export default function Chat() {
   return (
     <div className="chat-container">
       <div className="header">
-        <h1>iA Chat</h1>
+        <div className="header-logo">
+          <div className="logo-icon">
+            <svg viewBox="0 0 32 32" fill="none" width="28" height="28">
+              <defs>
+                <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#6366f1"/>
+                  <stop offset="50%" stopColor="#a855f7"/>
+                  <stop offset="100%" stopColor="#ec4899"/>
+                </linearGradient>
+              </defs>
+              <circle cx="16" cy="16" r="15" fill="url(#logoGrad)"/>
+              <path d="M10 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+              <circle cx="12" cy="13" r="1.5" fill="white"/>
+              <circle cx="20" cy="13" r="1.5" fill="white"/>
+              <path d="M8 11c1-3 4-5 8-5s7 2 8 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+            </svg>
+          </div>
+          <span className="logo-text">iA Chat</span>
+        </div>
         <div className="header-actions">
           <div className="model-selector">
             <button className="model-badge" onClick={() => setShowModelPicker(!showModelPicker)}>
@@ -365,7 +383,20 @@ export default function Chat() {
       <div className="messages">
         {messages.length === 0 && !loading && (
           <div className="welcome">
-            <div className="welcome-icon">💬</div>
+            <div className="welcome-icon">
+              <svg viewBox="0 0 32 32" fill="none" width="44" height="44">
+                <defs>
+                  <linearGradient id="welcomeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff"/>
+                    <stop offset="100%" stopColor="#e0d4ff"/>
+                  </linearGradient>
+                </defs>
+                <path d="M10 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="url(#welcomeGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+                <circle cx="12" cy="13" r="2" fill="url(#welcomeGrad)"/>
+                <circle cx="20" cy="13" r="2" fill="url(#welcomeGrad)"/>
+                <path d="M8 11c1-3 4-5 8-5s7 2 8 5" stroke="url(#welcomeGrad)" strokeWidth="2" strokeLinecap="round" opacity="0.7"/>
+              </svg>
+            </div>
             <h2>Hola, como puedo ayudarte?</h2>
             <p>Puedo buscar productos, generar imagenes, responder preguntas y mas.</p>
             <div className="tips-grid">
