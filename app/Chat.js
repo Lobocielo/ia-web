@@ -11,6 +11,7 @@ const MODELS = [
   { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Razonamiento avanzado, matematicas, logica', vision: false, cat: 'Chat', type: 'llm' },
   { id: 'openai/gpt-oss-120b', name: 'GPT OSS 120B', desc: 'Maximo potencia, puede buscar en internet', vision: false, cat: 'Chat', type: 'llm' },
   { id: 'openai/gpt-oss-20b', name: 'GPT OSS 20B', desc: 'Rapido, puede buscar en internet', vision: false, cat: 'Chat', type: 'llm' },
+  { id: 'allam-2-7b', name: 'ALLaM 2 7B', desc: 'Optimizado para arabe y multiidioma', vision: false, cat: 'Chat', type: 'llm' },
 
   // === AGENTES (usan herramientas automaticamente) ===
   { id: 'groq/compound', name: 'Compound', desc: 'Agente: busca en web, ejecuta codigo, usa herramientas solo', vision: false, cat: 'Agentes', type: 'agent' },
