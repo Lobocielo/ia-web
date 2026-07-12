@@ -1,36 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-
 export default function RegisterPage() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [adminKey, setAdminKey] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-
-  const handleRegister = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-    try {
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'register', username, password, adminKey })
-      })
-      const data = await res.json()
-      if (data.error) { setError(data.error); setLoading(false); return }
-      setSuccess(true)
-      setLoading(false)
-      setTimeout(() => { window.location.href = 'https://discord.gg/KmpPP4SGxm' }, 2000)
-    } catch {
-      setError('Error de conexion')
-      setLoading(false)
-    }
-  }
-
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -50,24 +20,14 @@ export default function RegisterPage() {
           </svg>
           <span>Nexus AI</span>
         </div>
-        <h1>Crear Cuenta</h1>
-        {success ? (
-          <>
-            <div className="auth-success">Cuenta creada! Redirigiendo a Discord...</div>
-            <a href="https://discord.gg/KmpPP4SGxm" className="discord-btn" target="_blank" rel="noopener noreferrer">
-              Unirte al Discord
-            </a>
-          </>
-        ) : (
-          <form onSubmit={handleRegister}>
-            <input type="text" placeholder="Usuario" value={username} onChange={e => setUsername(e.target.value)} required minLength={3} maxLength={20} />
-            <input type="password" placeholder="Contrasena (minimo 6)" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
-            <input type="password" placeholder="Clave de administrador" value={adminKey} onChange={e => setAdminKey(e.target.value)} required />
-            {error && <div className="auth-error">{error}</div>}
-            <button type="submit" disabled={loading}>{loading ? 'Creando...' : 'Crear Cuenta'}</button>
-          </form>
-        )}
-        <p className="auth-link">Ya tenes cuenta? <a href="/login">Inicia sesion</a></p>
+        <h1>Solicitar Cuenta</h1>
+        <p style={{color:'var(--text-secondary)', fontSize:'14px', textAlign:'center', lineHeight:'1.6', marginBottom:'16px'}}>
+          Para obtener una cuenta, unite a nuestro servidor de Discord y pedila alli.
+        </p>
+        <a href="https://discord.gg/KmpPP4SGxm" className="discord-btn" target="_blank" rel="noopener noreferrer">
+          Unirte al Discord
+        </a>
+        <p className="auth-link" style={{marginTop:'20px'}}><a href="/login">Ya tenes cuenta? Inicia sesion</a></p>
       </div>
     </div>
   )

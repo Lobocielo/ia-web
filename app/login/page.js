@@ -58,7 +58,7 @@ export default function LoginPage() {
           {error && <div className="auth-error">{error}</div>}
           <button type="submit" disabled={loading}>{loading ? 'Entrando...' : 'Entrar'}</button>
         </form>
-        <p className="auth-link">No tenes cuenta? <a href="/register">Registrate</a></p>
+        <p className="auth-link">Solicitar cuenta? <a href="/register">Unite a Discord</a></p>
         <p className="auth-link"><a href="/admin-login">Sos admin? Entrar aqui</a></p>
       </div>
     </div>
