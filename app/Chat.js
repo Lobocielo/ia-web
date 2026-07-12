@@ -3,17 +3,20 @@
 import { useState, useRef, useEffect } from 'react'
 
 const MODELS = [
-  // === CHAT GRATIS (Groq - con censura) ===
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Gratis - con censura', vision: false, cat: 'Gratis (Groq)', type: 'llm' },
+  // === CHAT GRATIS (Groq) ===
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Gratis - potente y rapido', vision: false, cat: 'Gratis (Groq)', type: 'llm' },
   { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Gratis - ultra rapido', vision: false, cat: 'Gratis (Groq)', type: 'llm' },
   { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Gratis - vision + chat', vision: true, cat: 'Gratis (Groq)', type: 'llm' },
 
-  // === CHAT PREMIUM (OpenRouter - SIN CENSURA) ===
-  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', desc: 'Sin censura - roleplay, cualquier tema', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
+  // === CHAT PREMIUM (OpenRouter) ===
+  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', desc: 'Sin censura - roleplay libre', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
   { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', desc: 'Sin censura - el mas grande', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
   { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition', name: 'Dolphin Venice', desc: 'Sin censura - 100% libre', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
   { id: 'deepseek/deepseek-v4-flash', name: 'DeepSeek V4 Flash', desc: 'Sin censura - rapido y potente', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
   { id: 'mistralai/mistral-large-2512', name: 'Mistral Large 3', desc: 'Sin censura - Mistral oficial', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
+  { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', desc: 'Gratis - Google IA', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
+  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Gratis - Multilingue', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Premium - mejor razonamiento', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
 
   // === AGENTES (Groq - gratis) ===
   { id: 'groq/compound', name: 'Compound', desc: 'Agente: busca + ejecuta codigo', vision: false, cat: 'Agentes', type: 'agent' },
@@ -58,7 +61,7 @@ function GeneratedImage({ prompt, url }) {
     a.href = url
     a.target = '_blank'
     a.rel = 'noopener noreferrer'
-    a.download = `imagen-${Date.now()}.png`
+    a.download = `nexus-${Date.now()}.png`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -185,7 +188,7 @@ export default function Chat() {
     if (!msg || loading) return
 
     if (image && !supportsVision) {
-      setError('Este modelo no soporta imagenes. Elegi Llama 4 Scout o Qwen 3.6.')
+      setError('Este modelo no soporta imagenes. Elegi Llama 4 Scout.')
       return
     }
 
@@ -297,10 +300,10 @@ export default function Chat() {
   const clearChat = () => { setMessages([]); setError(null) }
 
   const suggestions = [
-    'Busca auriculares bluetooth baratos',
-    'El celular mas barato de Samsung',
     'Explica que es la programacion',
-    'Sillas gamer con envio gratis'
+    'Escribi un script en Python',
+    'Analiza esta imagen',
+    'Busca celulares Samsung'
   ]
 
   return (
@@ -311,19 +314,18 @@ export default function Chat() {
             <svg viewBox="0 0 32 32" fill="none" width="28" height="28">
               <defs>
                 <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6366f1"/>
-                  <stop offset="50%" stopColor="#a855f7"/>
-                  <stop offset="100%" stopColor="#ec4899"/>
+                  <stop offset="0%" stopColor="#00d4ff"/>
+                  <stop offset="50%" stopColor="#6366f1"/>
+                  <stop offset="100%" stopColor="#a855f7"/>
                 </linearGradient>
               </defs>
               <circle cx="16" cy="16" r="15" fill="url(#logoGrad)"/>
-              <path d="M10 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-              <circle cx="12" cy="13" r="1.5" fill="white"/>
-              <circle cx="20" cy="13" r="1.5" fill="white"/>
-              <path d="M8 11c1-3 4-5 8-5s7 2 8 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+              <path d="M10 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+              <circle cx="12" cy="13" r="2" fill="white"/>
+              <circle cx="20" cy="13" r="2" fill="white"/>
             </svg>
           </div>
-          <span className="logo-text">iA Chat</span>
+          <span className="logo-text">Nexus AI</span>
         </div>
         <div className="header-actions">
           <div className="model-selector">
@@ -364,8 +366,8 @@ export default function Chat() {
           {user ? (
             <div className="user-info">
               <span className="user-name">{user.username}</span>
-              {user.premium && <span className="user-premium">PREMIUM</span>}
-              {user.role === 'admin' && <a href="/admin" className="admin-link">Panel Admin</a>}
+              {user.premium && <span className="user-premium">PRO</span>}
+              {user.role === 'admin' && <a href="/admin" className="admin-link">Admin</a>}
               <button className="logout-btn" onClick={() => { localStorage.removeItem('user'); setUser(null) }}>Salir</button>
             </div>
           ) : (
@@ -384,35 +386,35 @@ export default function Chat() {
         {messages.length === 0 && !loading && (
           <div className="welcome">
             <div className="welcome-icon">
-              <svg viewBox="0 0 32 32" fill="none" width="44" height="44">
+              <svg viewBox="0 0 32 32" fill="none" width="48" height="48">
                 <defs>
                   <linearGradient id="welcomeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="#ffffff"/>
                     <stop offset="100%" stopColor="#e0d4ff"/>
                   </linearGradient>
                 </defs>
-                <path d="M10 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="url(#welcomeGrad)" strokeWidth="2.5" strokeLinecap="round"/>
+                <path d="M10 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="url(#welcomeGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
                 <circle cx="12" cy="13" r="2" fill="url(#welcomeGrad)"/>
                 <circle cx="20" cy="13" r="2" fill="url(#welcomeGrad)"/>
                 <path d="M8 11c1-3 4-5 8-5s7 2 8 5" stroke="url(#welcomeGrad)" strokeWidth="2" strokeLinecap="round" opacity="0.7"/>
               </svg>
             </div>
-            <h2>Hola, como puedo ayudarte?</h2>
-            <p>Puedo buscar productos, generar imagenes, responder preguntas y mas.</p>
+            <h2>Hola, soy Nexus AI</h2>
+            <p>Tu asistente de IA profesional. Busco productos, genero imagenes, escribo codigo y mas.</p>
             <div className="tips-grid">
-              <div className="tip-card">
-                <span className="tip-icon">🔍</span>
-                <span className="tip-text">Busca auriculares bluetooth</span>
+              <div className="tip-card" onClick={() => { setInput('Explica que es la programacion'); sendMessage('Explica que es la programacion') }}>
+                <span className="tip-icon">💡</span>
+                <span className="tip-text">Explica que es la programacion</span>
               </div>
-              <div className="tip-card">
+              <div className="tip-card" onClick={() => { setInput('/img un gato astronauta'); sendMessage('/img un gato astronauta') }}>
                 <span className="tip-icon">🎨</span>
                 <span className="tip-text">/img un gato astronauta</span>
               </div>
-              <div className="tip-card">
-                <span className="tip-icon">📸</span>
-                <span className="tip-text">Subi una foto y preguntame</span>
+              <div className="tip-card" onClick={() => { setInput('Busca auriculares bluetooth'); sendMessage('Busca auriculares bluetooth') }}>
+                <span className="tip-icon">🔍</span>
+                <span className="tip-text">Busca auriculares bluetooth</span>
               </div>
-              <div className="tip-card">
+              <div className="tip-card" onClick={() => { setInput('Escribi un script en Python que cuente hasta 10'); sendMessage('Escribi un script en Python que cuente hasta 10') }}>
                 <span className="tip-icon">💻</span>
                 <span className="tip-text">Escribi codigo en Python</span>
               </div>
@@ -432,7 +434,7 @@ export default function Chat() {
 
         {messages.map((msg, i) => (
           <div key={i} className={`message ${msg.role}`}>
-            <div className="avatar">{msg.role === 'user' ? '👤' : '✨'}</div>
+            <div className="avatar">{msg.role === 'user' ? '👤' : '⚡'}</div>
             <div className="bubble-wrapper">
               <div className="bubble">
                 {msg.hasImage && msg.role === 'user' && typeof msg.content === 'object' && (
@@ -452,7 +454,7 @@ export default function Chat() {
 
         {loading && (
           <div className="message assistant">
-            <div className="avatar">✨</div>
+            <div className="avatar">⚡</div>
             <div className="bubble">
               <div className="typing-indicator">
                 <span></span><span></span><span></span>
@@ -511,7 +513,7 @@ export default function Chat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder='Escribi tu mensaje... (/img para generar imagen)'
+            placeholder='Escribi tu mensaje... (/img para imagen)'
             rows={1}
             disabled={loading}
           />

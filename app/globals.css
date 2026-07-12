@@ -8,15 +8,18 @@
 
 :root {
   --bg: #0a0a0a;
-  --bg-secondary: #141414;
-  --bg-tertiary: #1e1e1e;
-  --border: #2a2a2a;
-  --text: #e5e5e5;
-  --text-secondary: #a0a0a0;
+  --bg-secondary: #111113;
+  --bg-tertiary: #1a1a1e;
+  --border: #2a2a2e;
+  --text: #e8e8ec;
+  --text-secondary: #9898a0;
   --accent: #6366f1;
   --accent-hover: #818cf8;
+  --accent-glow: rgba(99, 102, 241, 0.15);
   --user-bubble: #6366f1;
-  --ai-bubble: #1e1e1e;
+  --ai-bubble: #1a1a1e;
+  --error: #ef4444;
+  --success: #22c55e;
 }
 
 body {
@@ -1793,4 +1796,28 @@ body {
 
 .admin-back:hover {
   text-decoration: underline;
+}
+
+.discord-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 24px;
+  background: #5865F2;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.discord-btn:hover {
+  background: #4752C4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
 }
