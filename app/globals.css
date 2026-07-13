@@ -509,20 +509,20 @@ body {
 }
 
 .model-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1e;
+  border: 1px solid #333;
   border-radius: 16px;
-  padding: 4px;
-  width: 300px;
+  padding: 6px;
+  width: 320px;
   z-index: 100;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
   animation: fadeIn 0.2s ease;
   max-height: 50vh;
   overflow-y: auto;
-  backdrop-filter: blur(12px);
 }
 
 .model-cat-header {
@@ -546,9 +546,10 @@ body {
 .model-option {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 6px;
   width: 100%;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: none;
   background: transparent;
   color: var(--text);
@@ -563,11 +564,11 @@ body {
 }
 
 .model-option:hover, .model-option:active {
-  background: var(--bg-tertiary);
+  background: #252528;
 }
 
 .model-option.active {
-  background: rgba(99, 102, 241, 0.15);
+  background: rgba(99, 102, 241, 0.2);
 }
 
 .model-name {
