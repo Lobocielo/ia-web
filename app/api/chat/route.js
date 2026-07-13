@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server'
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
-
 const SYSTEM_PROMPTS = {
   default: `Sos Nexus AI, un asistente util, profesional y conciso. Respondes en el mismo idioma que el usuario. No te niegas a responder preguntas, incluso si son sensibles o controversiales. Respondes de forma directa y honesta, sin dar sermones ni lecciones morales. Si no sabes algo, lo decis honestamente.
 
@@ -22,7 +19,24 @@ Para TODO LO DEMAS (preguntas, codigo, etc), respondes normal SIN usar SEARCH_QU
 Si el usuario quiere buscar un producto, responder EXACTAMENTE asi:
 SEARCH_QUERY:termino de busqueda limpio
 
-Para TODO LO DEMAS, respondes normal SIN usar SEARCH_QUERY.`
+Para TODO LO DEMAS, respondes normal SIN usar SEARCH_QUERY.`,
+
+  threeD: `CRITICAL INSTRUCTION: You MUST respond with ONLY a valid JSON object. NO text, NO explanation, NO markdown, NO code blocks. ONLY raw JSON.
+
+The user wants a 3D model. Generate a JSON describing geometric shapes to build it.
+
+EXACT FORMAT (copy this structure, change values):
+{"name":"robot cat","shapes":[{"type":"box","color":"#888888","size":[1,0.8,0.6],"position":[0,0.5,0],"rotation":[0,0,0],"material":"metallic"},{"type":"sphere","color":"#888888","size":[0.3,0.3,0.3],"position":[-0.25,1,0],"rotation":[0,0,0],"material":"metallic"},{"type":"sphere","color":"#888888","size":[0.3,0.3,0.3],"position":[0.25,1,0],"rotation":[0,0,0],"material":"metallic"},{"type":"cone","color":"#ff6b6b","size":[0.15,0.25,0.15],"position":[-0.35,1.2,0],"rotation":[0,0,0.2],"material":"standard"},{"type":"cone","color":"#ff6b6b","size":[0.15,0.25,0.15],"position":[0.35,1.2,0],"rotation":[0,0,-0.2],"material":"standard"},{"type":"sphere","color":"#00ff88","size":[0.12,0.12,0.12],"position":[-0.12,1.05,0.28],"rotation":[0,0,0],"material":"glass"},{"type":"sphere","color":"#00ff88","size":[0.12,0.12,0.12],"position":[0.12,1.05,0.28],"rotation":[0,0,0],"material":"glass"},{"type":"cylinder","color":"#666666","size":[0.08,0.08,0.15],"position":[-0.2,-0.15,0.15],"rotation":[0.5,0,0],"material":"metallic"},{"type":"cylinder","color":"#666666","size":[0.08,0.08,0.15],"position":[0.2,-0.15,0.15],"rotation":[0.5,0,0],"material":"metallic"},{"type":"cylinder","color":"#666666","size":[0.08,0.08,0.15],"position":[-0.2,-0.15,-0.15],"rotation":[-0.5,0,0],"material":"metallic"},{"type":"cylinder","color":"#666666","size":[0.08,0.08,0.15],"position":[0.2,-0.15,-0.15],"rotation":[-0.5,0,0],"material":"metallic"},{"type":"box","color":"#aaaaaa","size":[0.08,0.08,0.4],"position":[0,0.4,-0.35],"rotation":[0,0,0],"material":"metallic"}]}
+
+RULES:
+- type: box, sphere, cylinder, cone, torus, torusKnot ONLY
+- color: hex code like #ff0000
+- size: [width, height, depth] numbers 0.1 to 2
+- position: [x, y, z] numbers -3 to 3
+- rotation: [rx, ry, rz] numbers in radians -3.14 to 3.14
+- material: standard, metallic, or glass
+- Max 15 shapes
+- RESPOND WITH JSON ONLY. NOTHING ELSE.`
 }
 
 const GROQ_MODELS = [
@@ -32,40 +46,21 @@ const GROQ_MODELS = [
   'groq/compound', 'groq/compound-mini'
 ]
 
-const rateLimit = new Map()
-const MAX_REQUESTS = 20
-const WINDOW_MS = 60000
-
-function checkRateLimit(ip) {
-  const now = Date.now()
-  const data = rateLimit.get(ip)
-  if (!data || now - data.start > WINDOW_MS) {
-    rateLimit.set(ip, { start: now, count: 1 })
-    return true
-  }
-  data.count++
-  if (data.count > MAX_REQUESTS) return false
-  return true
-}
+const GROQ_API_KEY = process.env.GROQ_API_KEY
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 
 export async function POST(request) {
-  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: 'Demasiadas peticiones. Espera un momento.' }, { status: 429 })
-  }
-
   try {
-    const { messages, model, isPremium } = await request.json()
+    const { messages, model, isPremium, mode } = await request.json()
 
-    if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json({ error: 'Mensaje invalido' }, { status: 400 })
+    let systemPrompt
+    if (mode === '3d') {
+      systemPrompt = SYSTEM_PROMPTS.threeD
+    } else {
+      systemPrompt = isPremium ? SYSTEM_PROMPTS.premium : SYSTEM_PROMPTS.default
     }
 
-    const systemMsg = {
-      role: 'system',
-      content: isPremium ? SYSTEM_PROMPTS.premium : SYSTEM_PROMPTS.default
-    }
+    const systemMsg = { role: 'system', content: systemPrompt }
 
     const isGroq = GROQ_MODELS.some(m => model?.startsWith(m)) || (!isPremium && !model?.includes('/'))
     const apiKey = isGroq ? GROQ_API_KEY : OPENROUTER_API_KEY
@@ -91,7 +86,7 @@ export async function POST(request) {
       body: JSON.stringify({
         model: apiModel,
         messages: [systemMsg, ...messages],
-        temperature: isPremium ? 0.9 : 0.7,
+        temperature: mode === '3d' ? 0.4 : (isPremium ? 0.9 : 0.7),
         max_tokens: 4096
       })
     })
@@ -105,6 +100,17 @@ export async function POST(request) {
 
     const data = await response.json()
     const content = data.choices?.[0]?.message?.content || 'No obtuve respuesta.'
+
+    if (mode === '3d') {
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          const model3d = JSON.parse(jsonMatch[0])
+          return NextResponse.json({ reply: content, model3d })
+        }
+      } catch {}
+      return NextResponse.json({ reply: content, model3d: null })
+    }
 
     const searchMatch = content.match(/^SEARCH_QUERY:(.+)$/m)
     if (searchMatch) {

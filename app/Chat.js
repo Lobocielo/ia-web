@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 
 const MODELS = [
   // === CHAT GRATIS (Groq) ===
@@ -103,6 +103,150 @@ function GeneratedImage({ prompt, url }) {
   )
 }
 
+function Model3DViewer({ modelData, prompt }) {
+  const canvasRef = useRef(null)
+  const [downloading, setDownloading] = useState(false)
+
+  useEffect(() => {
+    if (!canvasRef.current || !modelData?.shapes) return
+    let mounted = true
+
+    const init = async () => {
+      const THREE = await import('three')
+      const { OrbitControls } = await import('three/addons/controls/OrbitControls.js')
+
+      if (!mounted) return
+      const canvas = canvasRef.current
+      const scene = new THREE.Scene()
+      scene.background = new THREE.Color(0x111113)
+
+      const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100)
+      camera.position.set(3, 2, 3)
+
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight)
+      renderer.setPixelRatio(window.devicePixelRatio)
+
+      const controls = new OrbitControls(camera, canvas)
+      controls.enableDamping = true
+      controls.autoRotate = true
+      controls.autoRotateSpeed = 2
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
+      scene.add(ambientLight)
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1)
+      dirLight.position.set(5, 5, 5)
+      scene.add(dirLight)
+      const pointLight = new THREE.PointLight(0x6366f1, 0.5)
+      pointLight.position.set(-3, 2, -3)
+      scene.add(pointLight)
+
+      const group = new THREE.Group()
+
+      modelData.shapes.forEach((s) => {
+        let geo
+        const size = s.size || [1, 1, 1]
+        switch (s.type) {
+          case 'sphere': geo = new THREE.SphereGeometry(size[0] * 0.5, 32, 32); break
+          case 'cylinder': geo = new THREE.CylinderGeometry(size[0] * 0.5, size[1] * 0.5, size[2] * 0.5, 32); break
+          case 'cone': geo = new THREE.ConeGeometry(size[0] * 0.5, size[1] * 0.5, 32); break
+          case 'torus': geo = new THREE.TorusGeometry(size[0] * 0.5, size[1] * 0.15, 16, 32); break
+          case 'torusKnot': geo = new THREE.TorusKnotGeometry(size[0] * 0.3, size[1] * 0.08, 64, 8); break
+          default: geo = new THREE.BoxGeometry(size[0], size[1], size[2])
+        }
+
+        let mat
+        const color = new THREE.Color(s.color || '#6366f1')
+        switch (s.material) {
+          case 'metallic': mat = new THREE.MeshStandardMaterial({ color, metalness: 0.9, roughness: 0.1 }); break
+          case 'glass': mat = new THREE.MeshPhysicalMaterial({ color, metalness: 0.1, roughness: 0.1, transmission: 0.8, transparent: true }); break
+          default: mat = new THREE.MeshStandardMaterial({ color, metalness: 0.3, roughness: 0.6 })
+        }
+
+        const mesh = new THREE.Mesh(geo, mat)
+        if (s.position) mesh.position.set(s.position[0], s.position[1], s.position[2])
+        if (s.rotation) mesh.rotation.set(s.rotation[0], s.rotation[1], s.rotation[2])
+        group.add(mesh)
+      })
+
+      scene.add(group)
+
+      const animate = () => {
+        if (!mounted) return
+        requestAnimationFrame(animate)
+        controls.update()
+        renderer.render(scene, camera)
+      }
+      animate()
+
+      return () => {
+        mounted = false
+        renderer.dispose()
+        controls.dispose()
+      }
+    }
+
+    init()
+  }, [modelData])
+
+  const downloadGLB = async () => {
+    setDownloading(true)
+    try {
+      const THREE = await import('three')
+      const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js')
+      const scene = new THREE.Scene()
+      const group = new THREE.Group()
+
+      modelData.shapes.forEach((s) => {
+        let geo
+        const size = s.size || [1, 1, 1]
+        switch (s.type) {
+          case 'sphere': geo = new THREE.SphereGeometry(size[0] * 0.5, 32, 32); break
+          case 'cylinder': geo = new THREE.CylinderGeometry(size[0] * 0.5, size[1] * 0.5, size[2] * 0.5, 32); break
+          case 'cone': geo = new THREE.ConeGeometry(size[0] * 0.5, size[1] * 0.5, 32); break
+          case 'torus': geo = new THREE.TorusGeometry(size[0] * 0.5, size[1] * 0.15, 16, 32); break
+          case 'torusKnot': geo = new THREE.TorusKnotGeometry(size[0] * 0.3, size[1] * 0.08, 64, 8); break
+          default: geo = new THREE.BoxGeometry(size[0], size[1], size[2])
+        }
+        const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(s.color || '#6366f1') })
+        const mesh = new THREE.Mesh(geo, mat)
+        if (s.position) mesh.position.set(s.position[0], s.position[1], s.position[2])
+        if (s.rotation) mesh.rotation.set(s.rotation[0], s.rotation[1], s.rotation[2])
+        group.add(mesh)
+      })
+
+      scene.add(group)
+      const exporter = new GLTFExporter()
+      exporter.parse(scene, (result) => {
+        const blob = new Blob([result], { type: 'model/gltf-binary' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `nexus-3d-${Date.now()}.glb`
+        a.click()
+        URL.revokeObjectURL(url)
+        setDownloading(false)
+      }, { binary: true })
+    } catch { setDownloading(false) }
+  }
+
+  return (
+    <div className="model3d-container">
+      <canvas ref={canvasRef} className="model3d-canvas" />
+      <div className="model3d-info">
+        <span className="model3d-name">{modelData?.name || prompt}</span>
+        <span className="model3d-shapes">{modelData?.shapes?.length || 0} formas</span>
+      </div>
+      <div className="model3d-actions">
+        <button onClick={downloadGLB} className="gen-image-download" disabled={downloading}>
+          {downloading ? 'Exportando...' : 'Descargar .GLB'}
+        </button>
+      </div>
+      <div className="model3d-prompt">{prompt}</div>
+    </div>
+  )
+}
+
 export default function Chat() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -196,6 +340,30 @@ export default function Chat() {
     return `https://image.pollinations.ai/prompt/${encoded}?width=1536&height=1024&nologo=true&seed=${seed}&model=${imgModel}`
   }
 
+  const generateFallback3D = (prompt) => {
+    const words = prompt.toLowerCase().split(/\s+/)
+    const colorPalette = ['#6366f1','#a855f7','#ec4899','#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#06b6d4','#3b82f6']
+    const shapes = []
+    const name = words.slice(0, 3).join(' ') || 'modelo 3d'
+    const bodyColor = colorPalette[Math.floor(Math.random() * colorPalette.length)]
+    const accentColor = colorPalette[Math.floor(Math.random() * colorPalette.length)]
+    const eyeColor = '#00ff88'
+
+    shapes.push({ type: 'sphere', color: bodyColor, size: [0.8, 0.7, 0.7], position: [0, 0.5, 0], rotation: [0, 0, 0], material: 'standard' })
+    shapes.push({ type: 'sphere', color: bodyColor, size: [0.55, 0.55, 0.55], position: [0, 1.1, 0], rotation: [0, 0, 0], material: 'standard' })
+    shapes.push({ type: 'cone', color: accentColor, size: [0.18, 0.3, 0.18], position: [-0.25, 1.45, 0], rotation: [0, 0, 0.3], material: 'metallic' })
+    shapes.push({ type: 'cone', color: accentColor, size: [0.18, 0.3, 0.18], position: [0.25, 1.45, 0], rotation: [0, 0, -0.3], material: 'metallic' })
+    shapes.push({ type: 'sphere', color: eyeColor, size: [0.1, 0.1, 0.1], position: [-0.15, 1.15, 0.25], rotation: [0, 0, 0], material: 'glass' })
+    shapes.push({ type: 'sphere', color: eyeColor, size: [0.1, 0.1, 0.1], position: [0.15, 1.15, 0.25], rotation: [0, 0, 0], material: 'glass' })
+    shapes.push({ type: 'cylinder', color: '#555555', size: [0.1, 0.1, 0.4], position: [-0.2, -0.1, 0.15], rotation: [0.6, 0, 0], material: 'metallic' })
+    shapes.push({ type: 'cylinder', color: '#555555', size: [0.1, 0.1, 0.4], position: [0.2, -0.1, 0.15], rotation: [0.6, 0, 0], material: 'metallic' })
+    shapes.push({ type: 'cylinder', color: '#555555', size: [0.1, 0.1, 0.4], position: [-0.2, -0.1, -0.15], rotation: [-0.6, 0, 0], material: 'metallic' })
+    shapes.push({ type: 'cylinder', color: '#555555', size: [0.1, 0.1, 0.4], position: [0.2, -0.1, -0.15], rotation: [-0.6, 0, 0], material: 'metallic' })
+    shapes.push({ type: 'torus', color: accentColor, size: [0.15, 0.06, 0.06], position: [0, 0.9, 0], rotation: [0, 0, 0], material: 'metallic' })
+
+    return { name, shapes }
+  }
+
   const sendMessage = async (text) => {
     const msg = text || input.trim()
     if (!msg || loading) return
@@ -208,6 +376,42 @@ export default function Chat() {
     setError(null)
 
     const isImageGen = msg.toLowerCase().startsWith('/img ') || msg.toLowerCase().startsWith('/imagen ')
+    const is3DGen = msg.toLowerCase().startsWith('/3d ')
+
+    if (is3DGen) {
+      const prompt = msg.replace(/^\/3d\s+/i, '')
+      const userMessage = { role: 'user', content: msg, text: msg }
+      const newMessages = [...messages, userMessage]
+      setMessages(newMessages)
+      setInput('')
+      setLoading(true)
+
+      let model3d = null
+      let replyText = `Modelo 3D: "${prompt}"`
+
+      try {
+        const model3dMessages = [{ role: 'user', content: `Generate a 3D model of: ${prompt}. JSON ONLY.` }]
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: model3dMessages, model: 'llama-3.3-70b-versatile', isPremium: false, mode: '3d' })
+        })
+        const data = await res.json()
+        if (data.model3d && data.model3d.shapes && data.model3d.shapes.length > 0) {
+          model3d = data.model3d
+          replyText = data.reply || replyText
+        }
+      } catch {}
+
+      if (!model3d) {
+        model3d = generateFallback3D(prompt)
+        replyText = `Modelo 3D generado: "${prompt}"`
+      }
+
+      setMessages([...newMessages, { role: 'assistant', content: replyText, model3d }])
+      setLoading(false)
+      return
+    }
 
     if (isImageGen) {
       const prompt = msg.replace(/^\/(img|imagen)\s+/i, '')
@@ -476,6 +680,7 @@ export default function Chat() {
               </div>
               {msg.search && <SearchCard query={msg.search.query} url={msg.search.url} />}
               {msg.generatedImage && <GeneratedImage prompt={msg.generatedImage.prompt} url={msg.generatedImage.url} />}
+              {msg.model3d && <Model3DViewer modelData={msg.model3d} prompt={msg.content} />}
             </div>
           </div>
         ))}
@@ -541,7 +746,7 @@ export default function Chat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder='Escribi tu mensaje... (/img para imagen)'
+            placeholder='Escribi tu mensaje... (/img imagen | /3d modelo)'
             rows={1}
             disabled={loading}
           />
