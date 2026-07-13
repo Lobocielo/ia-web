@@ -118,49 +118,81 @@ function Model3DViewer({ modelData, prompt }) {
       if (!mounted) return
       const canvas = canvasRef.current
       const scene = new THREE.Scene()
-      scene.background = new THREE.Color(0x111113)
 
-      const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 100)
-      camera.position.set(3, 2, 3)
+      const bgCanvas = document.createElement('canvas')
+      bgCanvas.width = 512
+      bgCanvas.height = 512
+      const bgCtx = bgCanvas.getContext('2d')
+      const grad = bgCtx.createRadialGradient(256, 256, 0, 256, 256, 360)
+      grad.addColorStop(0, '#1a1a2e')
+      grad.addColorStop(1, '#0a0a12')
+      bgCtx.fillStyle = grad
+      bgCtx.fillRect(0, 0, 512, 512)
+      const bgTex = new THREE.CanvasTexture(bgCanvas)
+      scene.background = bgTex
+
+      const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 100)
+      camera.position.set(3.5, 2.5, 3.5)
 
       const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
       renderer.setSize(canvas.clientWidth, canvas.clientHeight)
       renderer.setPixelRatio(window.devicePixelRatio)
+      renderer.toneMapping = THREE.ACESFilmicToneMapping
+      renderer.toneMappingExposure = 1.2
 
       const controls = new OrbitControls(camera, canvas)
       controls.enableDamping = true
       controls.autoRotate = true
-      controls.autoRotateSpeed = 2
+      controls.autoRotateSpeed = 3
+      controls.minDistance = 1.5
+      controls.maxDistance = 10
+      controls.target.set(0, 0.5, 0)
 
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
       scene.add(ambientLight)
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1)
-      dirLight.position.set(5, 5, 5)
-      scene.add(dirLight)
-      const pointLight = new THREE.PointLight(0x6366f1, 0.5)
-      pointLight.position.set(-3, 2, -3)
+      const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.5)
+      dirLight1.position.set(5, 8, 5)
+      scene.add(dirLight1)
+      const dirLight2 = new THREE.DirectionalLight(0x6366f1, 0.6)
+      dirLight2.position.set(-5, 3, -5)
+      scene.add(dirLight2)
+      const pointLight = new THREE.PointLight(0xa855f7, 0.8, 15)
+      pointLight.position.set(0, 4, 0)
       scene.add(pointLight)
+      const rimLight = new THREE.DirectionalLight(0x00d4ff, 0.4)
+      rimLight.position.set(0, -2, 5)
+      scene.add(rimLight)
+
+      const grid = new THREE.GridHelper(10, 20, 0x333355, 0x222244)
+      grid.position.y = -0.5
+      scene.add(grid)
 
       const group = new THREE.Group()
 
       modelData.shapes.forEach((s) => {
         let geo
         const size = s.size || [1, 1, 1]
+        const segs = 48
         switch (s.type) {
-          case 'sphere': geo = new THREE.SphereGeometry(size[0] * 0.5, 32, 32); break
-          case 'cylinder': geo = new THREE.CylinderGeometry(size[0] * 0.5, size[1] * 0.5, size[2] * 0.5, 32); break
-          case 'cone': geo = new THREE.ConeGeometry(size[0] * 0.5, size[1] * 0.5, 32); break
-          case 'torus': geo = new THREE.TorusGeometry(size[0] * 0.5, size[1] * 0.15, 16, 32); break
-          case 'torusKnot': geo = new THREE.TorusKnotGeometry(size[0] * 0.3, size[1] * 0.08, 64, 8); break
+          case 'sphere': geo = new THREE.SphereGeometry(size[0] * 0.5, segs, segs); break
+          case 'cylinder': geo = new THREE.CylinderGeometry(size[0] * 0.5, size[1] * 0.5, size[2] * 0.5, segs); break
+          case 'cone': geo = new THREE.ConeGeometry(size[0] * 0.5, size[1] * 0.5, segs); break
+          case 'torus': geo = new THREE.TorusGeometry(size[0] * 0.5, size[1] * 0.18, 24, segs); break
+          case 'torusKnot': geo = new THREE.TorusKnotGeometry(size[0] * 0.3, size[1] * 0.1, 128, 24); break
           default: geo = new THREE.BoxGeometry(size[0], size[1], size[2])
         }
 
         let mat
         const color = new THREE.Color(s.color || '#6366f1')
         switch (s.material) {
-          case 'metallic': mat = new THREE.MeshStandardMaterial({ color, metalness: 0.9, roughness: 0.1 }); break
-          case 'glass': mat = new THREE.MeshPhysicalMaterial({ color, metalness: 0.1, roughness: 0.1, transmission: 0.8, transparent: true }); break
-          default: mat = new THREE.MeshStandardMaterial({ color, metalness: 0.3, roughness: 0.6 })
+          case 'metallic':
+            mat = new THREE.MeshStandardMaterial({ color, metalness: 0.95, roughness: 0.05, envMapIntensity: 1.5 })
+            break
+          case 'glass':
+            mat = new THREE.MeshPhysicalMaterial({ color, metalness: 0.0, roughness: 0.05, transmission: 0.9, thickness: 0.5, transparent: true, opacity: 0.9 })
+            break
+          default:
+            mat = new THREE.MeshStandardMaterial({ color, metalness: 0.4, roughness: 0.35 })
         }
 
         const mesh = new THREE.Mesh(geo, mat)
@@ -342,24 +374,82 @@ export default function Chat() {
 
   const generateFallback3D = (prompt) => {
     const words = prompt.toLowerCase().split(/\s+/)
-    const colorPalette = ['#6366f1','#a855f7','#ec4899','#ef4444','#f97316','#eab308','#22c55e','#14b8a6','#06b6d4','#3b82f6']
-    const shapes = []
-    const name = words.slice(0, 3).join(' ') || 'modelo 3d'
-    const bodyColor = colorPalette[Math.floor(Math.random() * colorPalette.length)]
-    const accentColor = colorPalette[Math.floor(Math.random() * colorPalette.length)]
-    const eyeColor = '#00ff88'
+    const palettes = [
+      ['#ff6b6b','#ee5a24','#f9ca24','#ff9ff3'],
+      ['#6c5ce7','#a29bfe','#fd79a8','#e84393'],
+      ['#00b894','#00cec9','#0984e3','#6c5ce7'],
+      ['#fdcb6e','#e17055','#d63031','#e84393'],
+      ['#55efc4','#81ecec','#74b9ff','#a29bfe'],
+      ['#ff7675','#d63031','#fdcb6e','#ffeaa7'],
+      ['#2d3436','#636e72','#b2bec3','#dfe6e9']
+    ]
+    const palette = palettes[Math.floor(Math.random() * palettes.length)]
+    const pick = () => palette[Math.floor(Math.random() * palette.length)]
+    const metal = () => ['metallic','metallic','standard','standard','glass'][Math.floor(Math.random() * 5)]
 
-    shapes.push({ type: 'sphere', color: bodyColor, size: [0.8, 0.7, 0.7], position: [0, 0.5, 0], rotation: [0, 0, 0], material: 'standard' })
-    shapes.push({ type: 'sphere', color: bodyColor, size: [0.55, 0.55, 0.55], position: [0, 1.1, 0], rotation: [0, 0, 0], material: 'standard' })
-    shapes.push({ type: 'cone', color: accentColor, size: [0.18, 0.3, 0.18], position: [-0.25, 1.45, 0], rotation: [0, 0, 0.3], material: 'metallic' })
-    shapes.push({ type: 'cone', color: accentColor, size: [0.18, 0.3, 0.18], position: [0.25, 1.45, 0], rotation: [0, 0, -0.3], material: 'metallic' })
-    shapes.push({ type: 'sphere', color: eyeColor, size: [0.1, 0.1, 0.1], position: [-0.15, 1.15, 0.25], rotation: [0, 0, 0], material: 'glass' })
-    shapes.push({ type: 'sphere', color: eyeColor, size: [0.1, 0.1, 0.1], position: [0.15, 1.15, 0.25], rotation: [0, 0, 0], material: 'glass' })
-    shapes.push({ type: 'cylinder', color: '#555555', size: [0.1, 0.1, 0.4], position: [-0.2, -0.1, 0.15], rotation: [0.6, 0, 0], material: 'metallic' })
-    shapes.push({ type: 'cylinder', color: '#555555', size: [0.1, 0.1, 0.4], position: [0.2, -0.1, 0.15], rotation: [0.6, 0, 0], material: 'metallic' })
-    shapes.push({ type: 'cylinder', color: '#555555', size: [0.1, 0.1, 0.4], position: [-0.2, -0.1, -0.15], rotation: [-0.6, 0, 0], material: 'metallic' })
-    shapes.push({ type: 'cylinder', color: '#555555', size: [0.1, 0.1, 0.4], position: [0.2, -0.1, -0.15], rotation: [-0.6, 0, 0], material: 'metallic' })
-    shapes.push({ type: 'torus', color: accentColor, size: [0.15, 0.06, 0.06], position: [0, 0.9, 0], rotation: [0, 0, 0], material: 'metallic' })
+    const name = words.slice(0, 3).join(' ') || 'modelo'
+    const shapes = []
+
+    const isAnimal = words.some(w => ['gato','perro','pajaro','pez','conejo','lobo','oso','leon'].includes(w))
+    const isBuilding = words.some(w => ['castle','castillo','casa','edificio','tower','torre','fortress'].includes(w))
+    const isVehicle = words.some(w => ['car','auto','coche','moto','avion','ship','nave','vehiculo'].includes(w))
+    const isRobot = words.some(w => ['robot','cyborg','mech','droid','maquina'].includes(w))
+
+    if (isAnimal) {
+      const body = pick()
+      const accent = pick()
+      shapes.push({ type: 'sphere', color: body, size: [1.0, 0.8, 0.8], position: [0, 0.4, 0], rotation: [0, 0, 0], material: metal() })
+      shapes.push({ type: 'sphere', color: body, size: [0.65, 0.6, 0.6], position: [0, 1.05, 0], rotation: [0, 0, 0], material: metal() })
+      shapes.push({ type: 'cone', color: accent, size: [0.22, 0.35, 0.22], position: [-0.28, 1.45, 0], rotation: [0, 0, 0.35], material: 'metallic' })
+      shapes.push({ type: 'cone', color: accent, size: [0.22, 0.35, 0.22], position: [0.28, 1.45, 0], rotation: [0, 0, -0.35], material: 'metallic' })
+      shapes.push({ type: 'sphere', color: '#ffffff', size: [0.16, 0.16, 0.16], position: [-0.17, 1.12, 0.27], rotation: [0, 0, 0], material: 'glass' })
+      shapes.push({ type: 'sphere', color: '#ffffff', size: [0.16, 0.16, 0.16], position: [0.17, 1.12, 0.27], rotation: [0, 0, 0], material: 'glass' })
+      shapes.push({ type: 'sphere', color: '#111111', size: [0.08, 0.08, 0.08], position: [-0.17, 1.12, 0.34], rotation: [0, 0, 0], material: 'standard' })
+      shapes.push({ type: 'sphere', color: '#111111', size: [0.08, 0.08, 0.08], position: [0.17, 1.12, 0.34], rotation: [0, 0, 0], material: 'standard' })
+      shapes.push({ type: 'sphere', color: '#ff69b4', size: [0.07, 0.05, 0.05], position: [0, 1.02, 0.32], rotation: [0, 0, 0], material: 'standard' })
+      shapes.push({ type: 'cylinder', color: body, size: [0.1, 0.1, 0.45], position: [-0.22, -0.15, 0.18], rotation: [0.6, 0, 0], material: metal() })
+      shapes.push({ type: 'cylinder', color: body, size: [0.1, 0.1, 0.45], position: [0.22, -0.15, 0.18], rotation: [0.6, 0, 0], material: metal() })
+      shapes.push({ type: 'cylinder', color: body, size: [0.1, 0.1, 0.45], position: [-0.22, -0.15, -0.18], rotation: [-0.6, 0, 0], material: metal() })
+      shapes.push({ type: 'cylinder', color: body, size: [0.1, 0.1, 0.45], position: [0.22, -0.15, -0.18], rotation: [-0.6, 0, 0], material: metal() })
+      shapes.push({ type: 'cylinder', color: accent, size: [0.06, 0.06, 0.5], position: [0, 0.35, -0.45], rotation: [0, 0, 0], material: metal() })
+    } else if (isBuilding) {
+      const wall = pick()
+      const roof = pick()
+      shapes.push({ type: 'box', color: wall, size: [2, 1.5, 2], position: [0, 0.75, 0], rotation: [0, 0, 0], material: 'standard' })
+      shapes.push({ type: 'box', color: wall, size: [1.2, 2, 1.2], position: [0, 2.25, 0], rotation: [0, 0, 0], material: 'standard' })
+      shapes.push({ type: 'cone', color: roof, size: [1.5, 1.2, 1.5], position: [0, 3.85, 0], rotation: [0, 0, 0], material: metal() })
+      shapes.push({ type: 'cylinder', color: wall, size: [0.3, 0.3, 1.8], position: [-0.9, 0.9, 0.9], rotation: [0, 0, 0], material: 'standard' })
+      shapes.push({ type: 'cylinder', color: wall, size: [0.3, 0.3, 1.8], position: [0.9, 0.9, 0.9], rotation: [0, 0, 0], material: 'standard' })
+      shapes.push({ type: 'cone', color: roof, size: [0.5, 0.6, 0.5], position: [-0.9, 2.1, 0.9], rotation: [0, 0, 0], material: metal() })
+      shapes.push({ type: 'cone', color: roof, size: [0.5, 0.6, 0.5], position: [0.9, 2.1, 0.9], rotation: [0, 0, 0], material: metal() })
+      shapes.push({ type: 'box', color: '#2d1b00', size: [0.4, 0.7, 0.1], position: [0, 0.35, 1.01], rotation: [0, 0, 0], material: 'standard' })
+      shapes.push({ type: 'box', color: '#87CEEB', size: [0.35, 0.35, 0.1], position: [0, 1.2, 1.01], rotation: [0, 0, 0], material: 'glass' })
+    } else if (isVehicle) {
+      const body = pick()
+      const accent = pick()
+      shapes.push({ type: 'box', color: body, size: [2.2, 0.6, 1], position: [0, 0.5, 0], rotation: [0, 0, 0], material: metal() })
+      shapes.push({ type: 'box', color: body, size: [1.2, 0.5, 0.9], position: [-0.2, 1.05, 0], rotation: [0, 0, 0], material: metal() })
+      shapes.push({ type: 'cylinder', color: '#222222', size: [0.35, 0.35, 0.2], position: [-0.7, 0.18, 0.52], rotation: [1.57, 0, 0], material: 'standard' })
+      shapes.push({ type: 'cylinder', color: '#222222', size: [0.35, 0.35, 0.2], position: [0.7, 0.18, 0.52], rotation: [1.57, 0, 0], material: 'standard' })
+      shapes.push({ type: 'cylinder', color: '#222222', size: [0.35, 0.35, 0.2], position: [-0.7, 0.18, -0.52], rotation: [1.57, 0, 0], material: 'standard' })
+      shapes.push({ type: 'cylinder', color: '#222222', size: [0.35, 0.35, 0.2], position: [0.7, 0.18, -0.52], rotation: [1.57, 0, 0], material: 'standard' })
+      shapes.push({ type: 'box', color: '#87CEEB', size: [0.9, 0.35, 0.85], position: [-0.2, 1.1, 0], rotation: [0, 0, 0], material: 'glass' })
+      shapes.push({ type: 'sphere', color: accent, size: [0.15, 0.15, 0.15], position: [1.12, 0.5, 0.3], rotation: [0, 0, 0], material: 'glass' })
+      shapes.push({ type: 'sphere', color: accent, size: [0.15, 0.15, 0.15], position: [1.12, 0.5, -0.3], rotation: [0, 0, 0], material: 'glass' })
+    } else {
+      const main = pick()
+      const accent = pick()
+      const accent2 = pick()
+      shapes.push({ type: 'sphere', color: main, size: [1.0, 1.0, 1.0], position: [0, 0.8, 0], rotation: [0, 0, 0], material: metal() })
+      shapes.push({ type: 'box', color: main, size: [0.6, 0.8, 0.6], position: [0, 0.4, 0], rotation: [0, 0, 0], material: metal() })
+      shapes.push({ type: 'cylinder', color: accent, size: [0.15, 0.15, 1.2], position: [-0.5, 0.6, 0], rotation: [0, 0, 0.5], material: metal() })
+      shapes.push({ type: 'cylinder', color: accent, size: [0.15, 0.15, 1.2], position: [0.5, 0.6, 0], rotation: [0, 0, -0.5], material: metal() })
+      shapes.push({ type: 'torus', color: accent2, size: [0.5, 0.12, 0.12], position: [0, 1.4, 0], rotation: [1.57, 0, 0], material: 'glass' })
+      shapes.push({ type: 'sphere', color: accent, size: [0.2, 0.2, 0.2], position: [0, 1.5, 0], rotation: [0, 0, 0], material: 'glass' })
+      shapes.push({ type: 'cone', color: accent2, size: [0.2, 0.4, 0.2], position: [0, 0, 0.6], rotation: [1, 0, 0], material: metal() })
+      shapes.push({ type: 'sphere', color: accent2, size: [0.15, 0.15, 0.15], position: [-0.35, 1.2, 0.35], rotation: [0, 0, 0], material: 'glass' })
+      shapes.push({ type: 'sphere', color: accent2, size: [0.15, 0.15, 0.15], position: [0.35, 1.2, 0.35], rotation: [0, 0, 0], material: 'glass' })
+    }
 
     return { name, shapes }
   }
@@ -676,7 +766,7 @@ export default function Chat() {
                     className="message-image"
                   />
                 )}
-                {typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || ''}
+                {!msg.model3d && (typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || '')}
               </div>
               {msg.search && <SearchCard query={msg.search.query} url={msg.search.url} />}
               {msg.generatedImage && <GeneratedImage prompt={msg.generatedImage.prompt} url={msg.generatedImage.url} />}

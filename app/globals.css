@@ -1023,13 +1023,14 @@ body {
   margin-top: 10px;
   border-radius: 16px;
   overflow: hidden;
-  background: #0a0a0c;
+  background: linear-gradient(135deg, #0a0a15 0%, #111128 50%, #0a0a15 100%);
   border: 1px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.15), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
 .model3d-canvas {
   width: 100%;
-  height: 320px;
+  height: 360px;
   display: block;
   cursor: grab;
 }
