@@ -383,37 +383,8 @@ export default function Chat() {
       </div>
 
       <div className="messages">
-        <div className="chat-bg-logo">
-          <svg viewBox="0 0 120 120" fill="none" width="140" height="140">
-            <defs>
-              <linearGradient id="bgLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.12"/>
-                <stop offset="50%" stopColor="#a855f7" stopOpacity="0.08"/>
-                <stop offset="100%" stopColor="#ec4899" stopOpacity="0.06"/>
-              </linearGradient>
-            </defs>
-            <circle cx="60" cy="60" r="55" stroke="url(#bgLogoGrad)" strokeWidth="2.5" fill="none"/>
-            <circle cx="45" cy="50" r="6" fill="url(#bgLogoGrad)"/>
-            <circle cx="75" cy="50" r="6" fill="url(#bgLogoGrad)"/>
-            <path d="M35 70c0-13.8 10.9-25 25-25s25 11.2 25 25" stroke="url(#bgLogoGrad)" strokeWidth="3.5" strokeLinecap="round" fill="none"/>
-          </svg>
-        </div>
         {messages.length === 0 && !loading && (
           <div className="welcome">
-            <div className="welcome-icon">
-              <svg viewBox="0 0 32 32" fill="none" width="48" height="48">
-                <defs>
-                  <linearGradient id="welcomeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#ffffff"/>
-                    <stop offset="100%" stopColor="#e0d4ff"/>
-                  </linearGradient>
-                </defs>
-                <path d="M10 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="url(#welcomeGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-                <circle cx="12" cy="13" r="2" fill="url(#welcomeGrad)"/>
-                <circle cx="20" cy="13" r="2" fill="url(#welcomeGrad)"/>
-                <path d="M8 11c1-3 4-5 8-5s7 2 8 5" stroke="url(#welcomeGrad)" strokeWidth="2" strokeLinecap="round" opacity="0.7"/>
-              </svg>
-            </div>
             <h2>Hola, soy Nexus AI</h2>
             <p>Tu asistente de IA profesional. Busco productos, genero imagenes, escribo codigo y mas.</p>
             <div className="tips-grid">
