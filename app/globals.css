@@ -1841,3 +1841,146 @@ body {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
 }
+
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  padding: 4px;
+  margin: 16px 0;
+}
+
+.admin-tab {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.admin-tab.active {
+  background: var(--accent);
+  color: white;
+}
+
+.sec-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sec-stat-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sec-stat-icon {
+  font-size: 20px;
+}
+
+.sec-stat-val {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.sec-stat-lbl {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.sec-logs {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.sec-log-entry {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+
+.sec-log-time {
+  color: var(--text-secondary);
+  min-width: 65px;
+  font-family: monospace;
+}
+
+.sec-log-action {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.sec-log-action.login { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+.sec-log-action.register { background: rgba(99, 102, 241, 0.15); color: #6366f1; }
+.sec-log-action.list-users { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+.sec-log-action.delete-user { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.sec-log-action.toggle-premium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+.sec-log-user {
+  flex: 1;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.sec-log-ip {
+  color: var(--text-secondary);
+  font-family: monospace;
+  font-size: 10px;
+}
+
+.sec-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.sec-layer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.sec-layer.active .sec-layer-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+
+.sec-layer-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  flex-shrink: 0;
+}

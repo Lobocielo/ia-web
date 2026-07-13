@@ -7,31 +7,44 @@ const MODELS = [
   { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Potente y rapido', vision: false, cat: 'Gratis', type: 'llm' },
   { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Ultra rapido', vision: false, cat: 'Gratis', type: 'llm' },
   { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision + chat', vision: true, cat: 'Gratis', type: 'llm' },
+  { id: 'gemma2-9b-it', name: 'Gemma 2 9B', desc: 'Google - compacto', vision: false, cat: 'Gratis', type: 'llm' },
+  { id: 'mixtral-8x7b-32768', name: 'Mixtral 8x7B', desc: 'Mixture of Experts', vision: false, cat: 'Gratis', type: 'llm' },
+  { id: 'llama-3.1-8b-instant', name: 'Llama Guard', desc: 'Moderacion de contenido', vision: false, cat: 'Gratis', type: 'llm' },
 
   // === CHAT PREMIUM ===
-  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', desc: 'Sin censura - roleplay libre', vision: false, cat: 'Premium', type: 'llm', premium: true },
-  { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', desc: 'Sin censura - el mas grande', vision: false, cat: 'Premium', type: 'llm', premium: true },
-  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition', name: 'Dolphin Venice', desc: 'Sin censura - 100% libre', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', desc: 'Roleplay libre', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', desc: 'El mas grande', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition', name: 'Dolphin Venice', desc: '100% libre', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'deepseek/deepseek-v4-flash', name: 'DeepSeek V4 Flash', desc: 'Rapido y potente', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'mistralai/mistral-large-2512', name: 'Mistral Large 3', desc: 'Mistral oficial', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', desc: 'Google IA', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Multilingue', vision: false, cat: 'Premium', type: 'llm', premium: true },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Mejor razonamiento', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Razonamiento elite', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', desc: 'OpenAI rapido', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'openai/gpt-4o', name: 'GPT-4o', desc: 'OpenAI potente', vision: true, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'google/gemini-2.5-flash-preview', name: 'Gemini 2.5 Flash', desc: 'Google最新', vision: true, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'google/gemini-2.5-pro-preview', name: 'Gemini 2.5 Pro', desc: 'Google elite', vision: true, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'meta-llama/llama-4-maverick-17b-128e-instruct', name: 'Llama 4 Maverick', desc: 'Meta masivo', vision: true, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'cohere/command-a', name: 'Command A', desc: 'Cohere empresarial', vision: false, cat: 'Premium', type: 'llm', premium: true },
+
+  // === CODIGO ===
+  { id: 'deepseek/deepseek-coder-v2', name: 'DeepSeek Coder', desc: 'Especialista en codigo', vision: false, cat: 'Codigo', type: 'llm', premium: true },
+  { id: 'qwen/qwen-2.5-coder-32b-instruct', name: 'Qwen Coder 32B', desc: 'Multi-lenguaje', vision: false, cat: 'Codigo', type: 'llm', premium: true },
 
   // === AGENTES (Groq - gratis) ===
-  { id: 'groq/compound', name: 'Compound', desc: 'Busca + ejecuta codigo', vision: false, cat: 'Agentes', type: 'agent' },
+  { id: 'groq/compound', name: 'Compound', desc: 'Busca + ejecuta', vision: false, cat: 'Agentes', type: 'agent' },
   { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Agente rapido', vision: false, cat: 'Agentes', type: 'agent' },
 
   // === SEGURIDAD ===
-  { id: 'openai/gpt-oss-safeguard-20b', name: 'GPT Safeguard 20B', desc: 'Filtra contenido peligroso', vision: false, cat: 'Seguridad', type: 'safety' },
-  { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Prompt Guard 22M', desc: 'Detecta prompt injection', vision: false, cat: 'Seguridad', type: 'safety' },
-  { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 86m', desc: 'Detecta inyeccion de prompts', vision: false, cat: 'Seguridad', type: 'safety' },
+  { id: 'openai/gpt-oss-safeguard-20b', name: 'GPT Safeguard 20B', desc: 'Filtra contenido', vision: false, cat: 'Seguridad', type: 'safety' },
+  { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Prompt Guard 22M', desc: 'Anti injection', vision: false, cat: 'Seguridad', type: 'safety' },
+  { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 86M', desc: 'Anti injection Pro', vision: false, cat: 'Seguridad', type: 'safety' },
 
   // === AUDIO ===
-  { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'Transcribe audio a texto', vision: false, cat: 'Audio', type: 'stt' },
-  { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'Transcribe audio rapido', vision: false, cat: 'Audio', type: 'stt' },
-  { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', desc: 'Texto a voz en ingles', vision: false, cat: 'Audio', type: 'tts' },
-  { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus Arabic', desc: 'Texto a voz en arabe', vision: false, cat: 'Audio', type: 'tts' },
+  { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'Audio a texto', vision: false, cat: 'Audio', type: 'stt' },
+  { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'Transcripcion rapida', vision: false, cat: 'Audio', type: 'stt' },
+  { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus EN', desc: 'Voz en ingles', vision: false, cat: 'Audio', type: 'tts' },
+  { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus AR', desc: 'Voz en arabe', vision: false, cat: 'Audio', type: 'tts' },
 ]
 
 function SearchCard({ query, url }) {
@@ -356,7 +369,7 @@ export default function Chat() {
         <>
           <div className="model-overlay" onClick={() => setShowModelPicker(false)} />
           <div className="model-dropdown">
-            {['Gratis', 'Premium', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
+                  {['Gratis', 'Premium', 'Codigo', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
               <div key={cat}>
                 <div className="model-cat-header">{cat}</div>
                 {MODELS.filter(m => m.cat === cat).map(m => (

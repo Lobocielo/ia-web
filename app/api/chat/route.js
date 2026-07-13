@@ -28,6 +28,7 @@ Para TODO LO DEMAS, respondes normal SIN usar SEARCH_QUERY.`
 const GROQ_MODELS = [
   'llama-3.3-70b-versatile', 'llama-3.1-8b-instant',
   'meta-llama/llama-4-scout-17b-16e-instruct',
+  'gemma2-9b-it', 'mixtral-8x7b-32768',
   'groq/compound', 'groq/compound-mini'
 ]
 
