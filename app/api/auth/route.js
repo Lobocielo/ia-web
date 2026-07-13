@@ -20,7 +20,12 @@ function checkRateLimit(ip) {
   return true
 }
 
-function sanitize(str) {
+function sanitizeInput(str) {
+  if (!str || typeof str !== 'string') return ''
+  return str.trim().slice(0, 50)
+}
+
+function sanitizeDisplay(str) {
   if (!str || typeof str !== 'string') return ''
   return str.replace(/[<>"'&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' }[c])).trim().slice(0, 50)
 }
@@ -40,14 +45,14 @@ export async function POST(request) {
     const body = await request.json()
     const { action, username, password, adminKey } = body
 
-    const safeUser = sanitize(username)
-    const safePass = sanitize(password)
-
     if (action === 'login') {
-      const user = users.find(u => u.username === safeUser && u.password === safePass)
+      const user = users.find(u => u.username === sanitizeInput(username) && u.password === sanitizeInput(password))
       if (!user) return NextResponse.json({ error: 'Usuario o contrasena incorrecta' }, { status: 401 })
       return NextResponse.json({ user: { id: user.id, username: user.username, role: user.role, premium: user.premium } })
     }
+
+    const safeUser = sanitizeDisplay(username)
+    const safePass = sanitizeInput(password)
 
     if (action === 'register') {
       if (adminKey !== ADMIN_KEY) return NextResponse.json({ error: 'Clave de admin invalida' }, { status: 403 })
@@ -59,19 +64,21 @@ export async function POST(request) {
       return NextResponse.json({ user: { id: newUser.id, username: newUser.username, role: newUser.role, premium: newUser.premium } })
     }
 
+    const adminKeySafe = sanitizeInput(adminKey)
+
     if (action === 'list-users') {
-      if (adminKey !== ADMIN_KEY) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+      if (adminKeySafe !== ADMIN_KEY) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
       return NextResponse.json({ users: users.map(u => ({ id: u.id, username: u.username, role: u.role, premium: u.premium, created: u.created })) })
     }
 
     if (action === 'delete-user') {
-      if (adminKey !== ADMIN_KEY) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+      if (adminKeySafe !== ADMIN_KEY) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
       users = users.filter(u => u.id !== parseInt(username))
       return NextResponse.json({ ok: true })
     }
 
     if (action === 'toggle-premium') {
-      if (adminKey !== ADMIN_KEY) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
+      if (adminKeySafe !== ADMIN_KEY) return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
       const user = users.find(u => u.id === parseInt(username))
       if (user) user.premium = !user.premium
       return NextResponse.json({ ok: true, premium: user?.premium })
