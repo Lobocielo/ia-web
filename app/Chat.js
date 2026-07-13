@@ -103,6 +103,71 @@ function GeneratedImage({ prompt, url }) {
   )
 }
 
+function RenderContent({ text }) {
+  const [copiedIdx, setCopiedIdx] = useState(null)
+
+  const copyCode = (code, idx) => {
+    navigator.clipboard.writeText(code)
+    setCopiedIdx(idx)
+    setTimeout(() => setCopiedIdx(null), 2000)
+  }
+
+  const downloadCode = (code, lang) => {
+    const ext = {
+      javascript: 'js', typescript: 'ts', python: 'py', java: 'java',
+      cpp: 'cpp', c: 'c', html: 'html', css: 'css', php: 'php',
+      ruby: 'rb', go: 'go', rust: 'rs', swift: 'swift', sql: 'sql',
+      bash: 'sh', shell: 'sh', powershell: 'ps1', lua: 'lua',
+      json: 'json', yaml: 'yml', xml: 'xml', markdown: 'md',
+      javascript: 'js', jsx: 'jsx', tsx: 'tsx', dart: 'dart'
+    }[lang] || 'txt'
+    const blob = new Blob([code], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `nexus-code-${Date.now()}.${ext}`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  if (!text || typeof text !== 'string') return <>{text}</>
+
+  const parts = text.split(/(```[\s\S]*?```)/g)
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        const codeMatch = part.match(/^```(\w*)\n?([\s\S]*?)```$/)
+        if (codeMatch) {
+          const lang = codeMatch[1] || 'code'
+          const code = codeMatch[2].trim()
+          return (
+            <div key={i} className="code-block">
+              <div className="code-header">
+                <span className="code-lang">{lang}</span>
+                <div className="code-actions">
+                  <button className="code-btn" onClick={() => copyCode(code, i)}>
+                    {copiedIdx === i ? '✓ Copiado' : 'Copiar'}
+                  </button>
+                  <button className="code-btn download-btn" onClick={() => downloadCode(code, lang)}>
+                    Descargar .{{
+                      javascript: 'js', typescript: 'ts', python: 'py', java: 'java',
+                      cpp: 'cpp', c: 'c', html: 'html', css: 'css', lua: 'lua',
+                      json: 'json', sql: 'sql', bash: 'sh', shell: 'sh'
+                    }[lang] || 'txt'}
+                  </button>
+                </div>
+              </div>
+              <pre><code>{code}</code></pre>
+            </div>
+          )
+        }
+        return <span key={i}>{part}</span>
+      })}
+    </>
+  )
+}
+
 function Model3DViewer({ modelData, prompt }) {
   const canvasRef = useRef(null)
   const [downloading, setDownloading] = useState(false)
@@ -807,7 +872,9 @@ export default function Chat() {
                     className="message-image"
                   />
                 )}
-                {!msg.model3d && (typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || '')}
+                {!msg.model3d && (
+                  <RenderContent text={typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || ''} />
+                )}
               </div>
               {msg.search && <SearchCard query={msg.search.query} url={msg.search.url} />}
               {msg.generatedImage && <GeneratedImage prompt={msg.generatedImage.prompt} url={msg.generatedImage.url} />}

@@ -1050,6 +1050,70 @@ body {
   50% { opacity: 1; }
 }
 
+.code-block {
+  margin: 10px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0d1117;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: rgba(99, 102, 241, 0.1);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.code-lang {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-purple);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.code-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.code-btn {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--accent-blue);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.code-btn:hover {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.code-btn.download-btn {
+  color: var(--accent-green);
+}
+
+.code-block pre {
+  margin: 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.code-block code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  color: #e6edf3;
+  white-space: pre;
+}
+
 .gen-image-actions {
   margin-top: 8px;
 }
