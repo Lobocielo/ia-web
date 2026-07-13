@@ -87,7 +87,7 @@ export async function POST(request) {
         model: apiModel,
         messages: [systemMsg, ...messages],
         temperature: mode === '3d' ? 0.4 : (isPremium ? 0.9 : 0.7),
-        max_tokens: 4096
+        max_tokens: 1024
       })
     })
 
@@ -95,6 +95,45 @@ export async function POST(request) {
       const errText = await response.text().catch(() => '')
       let msg = 'Error desconocido'
       try { msg = JSON.parse(errText).error?.message || errText } catch { msg = errText.slice(0, 200) || `HTTP ${response.status}` }
+
+      if (!isGroq && (msg.includes('credits') || msg.includes('afford'))) {
+        const fallbackRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [systemMsg, ...messages],
+            temperature: 0.7,
+            max_tokens: 1024
+          })
+        })
+        if (fallbackRes.ok) {
+          const fallbackData = await fallbackRes.json()
+          const fallbackContent = fallbackData.choices?.[0]?.message?.content || 'No obtuve respuesta.'
+
+          if (mode === '3d') {
+            try {
+              const jsonMatch = fallbackContent.match(/\{[\s\S]*\}/)
+              if (jsonMatch) {
+                const model3d = JSON.parse(jsonMatch[0])
+                return NextResponse.json({ reply: fallbackContent, model3d })
+              }
+            } catch {}
+            return NextResponse.json({ reply: fallbackContent, model3d: null })
+          }
+
+          const searchMatch = fallbackContent.match(/^SEARCH_QUERY:(.+)$/m)
+          if (searchMatch) {
+            const query = searchMatch[1].trim()
+            const reply = fallbackContent.replace(/^SEARCH_QUERY:.+$/m, '').trim()
+            const url = `https://listado.mercadolibre.com.ar/${query.replace(/\s+/g, '-').toLowerCase()}`
+            return NextResponse.json({ reply, search: { query, url } })
+          }
+
+          return NextResponse.json({ reply: fallbackContent })
+        }
+      }
+
       return NextResponse.json({ error: `${isGroq ? 'Groq' : 'OpenRouter'}: ${msg}` }, { status: response.status })
     }
 
