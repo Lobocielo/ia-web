@@ -96,7 +96,7 @@ export async function POST(request) {
       let msg = 'Error desconocido'
       try { msg = JSON.parse(errText).error?.message || errText } catch { msg = errText.slice(0, 200) || `HTTP ${response.status}` }
 
-      if (!isGroq && (msg.includes('credits') || msg.includes('afford'))) {
+      if (!isGroq && (msg.includes('credits') || msg.includes('afford') || response.status === 404 || response.status === 400)) {
         const fallbackRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_API_KEY}` },

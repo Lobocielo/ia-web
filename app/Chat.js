@@ -19,12 +19,12 @@ const MODELS = [
   { id: 'mistralai/mistral-large-2512', name: 'Mistral Large 3', desc: 'Mistral oficial', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', desc: 'Google IA', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Multilingue', vision: false, cat: 'Premium', type: 'llm', premium: true },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Razonamiento elite', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'anthropic/claude-sonnet-4.5', name: 'Claude Sonnet 4.5', desc: 'Razonamiento elite', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini', desc: 'OpenAI rapido', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'openai/gpt-4o', name: 'GPT-4o', desc: 'OpenAI potente', vision: true, cat: 'Premium', type: 'llm', premium: true },
-  { id: 'google/gemini-2.5-flash-preview', name: 'Gemini 2.5 Flash', desc: 'Google最新', vision: true, cat: 'Premium', type: 'llm', premium: true },
-  { id: 'google/gemini-2.5-pro-preview', name: 'Gemini 2.5 Pro', desc: 'Google elite', vision: true, cat: 'Premium', type: 'llm', premium: true },
-  { id: 'meta-llama/llama-4-maverick-17b-128e-instruct', name: 'Llama 4 Maverick', desc: 'Meta masivo', vision: true, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'google/gemini-2.5-flash', name: 'Gemini 2.5 Flash', desc: 'Google rapido', vision: true, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro', desc: 'Google elite', vision: true, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'meta-llama/llama-4-maverick', name: 'Llama 4 Maverick', desc: 'Meta masivo', vision: true, cat: 'Premium', type: 'llm', premium: true },
   { id: 'cohere/command-a', name: 'Command A', desc: 'Cohere empresarial', vision: false, cat: 'Premium', type: 'llm', premium: true },
 
   // === CODIGO ===
