@@ -332,36 +332,6 @@ export default function Chat() {
             <button className="model-badge" onClick={() => setShowModelPicker(!showModelPicker)}>
               {currentModel?.name} ▾
             </button>
-            {showModelPicker && (
-              <>
-                <div className="model-overlay" onClick={() => setShowModelPicker(false)} />
-                <div className="model-dropdown">
-                  {['Gratis', 'Premium', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
-                    <div key={cat}>
-                      <div className="model-cat-header">{cat}</div>
-                      {MODELS.filter(m => m.cat === cat).map(m => (
-                        <button
-                          key={m.id}
-                          className={`model-option ${m.id === model ? 'active' : ''} ${m.premium && !user ? 'premium-locked' : ''}`}
-                          onClick={() => {
-                            if (m.premium && !user) { window.location.href = '/login'; return }
-                            setModel(m.id); setShowModelPicker(false); removeImage()
-                          }}
-                        >
-                          <span className="model-name">{m.name}</span>
-                          <span className="model-desc">{m.desc}</span>
-                          {m.vision && <span className="model-tag">VISION</span>}
-                          {m.type === 'stt' && <span className="model-tag tag-stt">STT</span>}
-                          {m.type === 'tts' && <span className="model-tag tag-tts">TTS</span>}
-                          {m.type === 'agent' && <span className="model-tag tag-agent">AGENT</span>}
-                          {m.premium && <span className="model-tag tag-premium">PREMIUM</span>}
-                        </button>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
           </div>
           {user ? (
             <div className="user-info">
@@ -381,6 +351,37 @@ export default function Chat() {
           )}
         </div>
       </div>
+
+      {showModelPicker && (
+        <>
+          <div className="model-overlay" onClick={() => setShowModelPicker(false)} />
+          <div className="model-dropdown">
+            {['Gratis', 'Premium', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
+              <div key={cat}>
+                <div className="model-cat-header">{cat}</div>
+                {MODELS.filter(m => m.cat === cat).map(m => (
+                  <button
+                    key={m.id}
+                    className={`model-option ${m.id === model ? 'active' : ''} ${m.premium && !user ? 'premium-locked' : ''}`}
+                    onClick={() => {
+                      if (m.premium && !user) { window.location.href = '/login'; return }
+                      setModel(m.id); setShowModelPicker(false); removeImage()
+                    }}
+                  >
+                    <span className="model-name">{m.name}</span>
+                    <span className="model-desc">{m.desc}</span>
+                    {m.vision && <span className="model-tag">VISION</span>}
+                    {m.type === 'stt' && <span className="model-tag tag-stt">STT</span>}
+                    {m.type === 'tts' && <span className="model-tag tag-tts">TTS</span>}
+                    {m.type === 'agent' && <span className="model-tag tag-agent">AGENT</span>}
+                    {m.premium && <span className="model-tag tag-premium">PRO</span>}
+                  </button>
+                ))}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <div className="messages">
         <div className="bg-watermark">

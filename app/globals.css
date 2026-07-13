@@ -511,18 +511,20 @@ body {
 }
 
 .model-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  position: fixed;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 6px;
-  min-width: 280px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
   z-index: 200;
   box-shadow: 0 12px 40px rgba(0,0,0,0.5);
   animation: fadeIn 0.2s ease;
-  max-height: 55vh;
+  max-height: calc(100dvh - 120px);
   overflow-y: auto;
   backdrop-filter: blur(12px);
 }
