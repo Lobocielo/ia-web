@@ -710,8 +710,9 @@ export default function Chat() {
                 {MODELS.filter(m => m.cat === cat).map(m => (
                   <button
                     key={m.id}
-                    className={`model-option ${m.id === model ? 'active' : ''}`}
+                    className={`model-option ${m.id === model ? 'active' : ''} ${m.premium && !user ? 'premium-locked' : ''}`}
                     onClick={() => {
+                      if (m.premium && !user) { window.location.href = '/login'; return }
                       setModel(m.id); setShowModelPicker(false); removeImage()
                     }}
                   >
