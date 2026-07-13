@@ -4,22 +4,6 @@ const ADMIN_USER = 'zt'
 const ADMIN_PASS = 'ZT#Secure2026!'
 const ADMIN_KEY = 'ZT#Secure2026!'
 
-const rateLimit = new Map()
-const MAX_REQUESTS = 15
-const WINDOW_MS = 60000
-
-function checkRateLimit(ip) {
-  const now = Date.now()
-  const data = rateLimit.get(ip)
-  if (!data || now - data.start > WINDOW_MS) {
-    rateLimit.set(ip, { start: now, count: 1 })
-    return true
-  }
-  data.count++
-  if (data.count > MAX_REQUESTS) return false
-  return true
-}
-
 function sanitizeInput(str) {
   if (!str || typeof str !== 'string') return ''
   return str.trim().slice(0, 50)
@@ -28,22 +12,6 @@ function sanitizeInput(str) {
 function sanitizeDisplay(str) {
   if (!str || typeof str !== 'string') return ''
   return str.replace(/[<>"'&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;' }[c])).trim().slice(0, 50)
-}
-
-const FAILED_LOGINS = new Map()
-const MAX_FAILED = 10
-const BLOCK_MS = 600000
-
-function checkFailedLogins(ip) {
-  const now = Date.now()
-  const data = FAILED_LOGINS.get(ip)
-  if (!data || now - data.start > BLOCK_MS) {
-    FAILED_LOGINS.set(ip, { start: now, count: 1 })
-    return true
-  }
-  data.count++
-  if (data.count > MAX_FAILED) return false
-  return true
 }
 
 let users = [
@@ -55,10 +23,6 @@ const LOG = []
 export async function POST(request) {
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
   const ts = new Date().toISOString()
-
-  if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: 'Demasiadas peticiones. Espera un momento.' }, { status: 429 })
-  }
 
   try {
     const body = await request.json()
@@ -72,14 +36,10 @@ export async function POST(request) {
     if (LOG.length > 500) LOG.shift()
 
     if (action === 'login') {
-      if (!checkFailedLogins(ip)) {
-        return NextResponse.json({ error: 'Demasiados intentos fallidos. Espera 10 minutos.' }, { status: 429 })
-      }
       const user = users.find(u => u.username === sanitizeInput(username) && u.password === sanitizeInput(password))
       if (!user) {
         return NextResponse.json({ error: 'Usuario o contrasena incorrecta' }, { status: 401 })
       }
-      FAILED_LOGINS.delete(ip)
       return NextResponse.json({ user: { id: user.id, username: user.username, role: user.role, premium: user.premium } })
     }
 
@@ -128,8 +88,8 @@ export async function POST(request) {
       return NextResponse.json({
         totalUsers: users.length,
         premiumUsers: users.filter(u => u.premium).length,
-        failedLogins: Array.from(FAILED_LOGINS.entries()).map(([ip, data]) => ({ ip, attempts: data.count })),
-        rateLimits: Array.from(rateLimit.entries()).map(([ip, data]) => ({ ip, requests: data.count }))
+        failedLogins: [],
+        rateLimits: []
       })
     }
 
