@@ -57,7 +57,7 @@ export async function POST(request) {
     if (mode === '3d') {
       systemPrompt = SYSTEM_PROMPTS.threeD
     } else {
-      systemPrompt = isPremium ? SYSTEM_PROMPTS.premium : SYSTEM_PROMPTS.default
+      systemPrompt = SYSTEM_PROMPTS.premium
     }
 
     const systemMsg = { role: 'system', content: systemPrompt }

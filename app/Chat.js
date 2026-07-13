@@ -295,6 +295,8 @@ export default function Chat() {
   const galleryInputRef = useRef(null)
   const cameraInputRef = useRef(null)
   const refInputRef = useRef(null)
+  const fileInputRef = useRef(null)
+  const [attachedFiles, setAttachedFiles] = useState([])
 
   useEffect(() => {
     const saved = localStorage.getItem('user')
@@ -363,6 +365,35 @@ export default function Chat() {
     setRefImage(compressed)
     setRefImagePreview(compressed)
     e.target.value = ''
+  }
+
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+    const maxSize = 10 * 1024 * 1024
+    const newFiles = []
+    for (const file of files) {
+      if (file.size > maxSize) { setError(`${file.name} supera 10MB`); continue }
+      try {
+        const text = await file.text()
+        const ext = file.name.split('.').pop().toLowerCase()
+        const isImage = ['png','jpg','jpeg','gif','webp','bmp','svg'].includes(ext)
+        if (isImage) {
+          const compressed = await compressImage(file)
+          newFiles.push({ name: file.name, type: 'image', content: compressed, size: file.size })
+        } else {
+          newFiles.push({ name: file.name, type: 'text', content: text.slice(0, 50000), size: file.size, ext })
+        }
+      } catch {
+        newFiles.push({ name: file.name, type: 'unknown', content: null, size: file.size })
+      }
+    }
+    setAttachedFiles(prev => [...prev, ...newFiles])
+    e.target.value = ''
+  }
+
+  const removeFile = (idx) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== idx))
   }
 
   const generateImage = (prompt) => {
@@ -556,14 +587,24 @@ export default function Chat() {
     }
 
     let userContent
+    const parts = []
+    if (msg) parts.push({ type: 'text', text: msg })
     if (image && supportsVision) {
-      userContent = [
-        { type: 'text', text: msg || 'Que ves en esta imagen?' },
-        { type: 'image_url', image_url: { url: image } }
-      ]
-    } else {
-      userContent = msg
+      parts.push({ type: 'image_url', image_url: { url: image } })
     }
+    if (attachedFiles.length > 0) {
+      const textFiles = attachedFiles.filter(f => f.type === 'text')
+      const imageFiles = attachedFiles.filter(f => f.type === 'image')
+      if (textFiles.length > 0) {
+        const fileContent = textFiles.map(f => `[Archivo: ${f.name} (${f.ext}, ${(f.size/1024).toFixed(1)}KB)]\n\`\`\`\n${f.content}\n\`\`\``).join('\n\n')
+        parts.push({ type: 'text', text: fileContent })
+      }
+      for (const img of imageFiles) {
+        parts.push({ type: 'image_url', image_url: { url: img.content } })
+      }
+    }
+    userContent = parts.length > 1 ? parts : (parts[0]?.text || msg)
+    setAttachedFiles([])
 
     const userMessage = { role: 'user', content: userContent, text: msg, hasImage: !!image }
     const newMessages = [...messages, userMessage]
@@ -669,9 +710,8 @@ export default function Chat() {
                 {MODELS.filter(m => m.cat === cat).map(m => (
                   <button
                     key={m.id}
-                    className={`model-option ${m.id === model ? 'active' : ''} ${m.premium && !user ? 'premium-locked' : ''}`}
+                    className={`model-option ${m.id === model ? 'active' : ''}`}
                     onClick={() => {
-                      if (m.premium && !user) { window.location.href = '/login'; return }
                       setModel(m.id); setShowModelPicker(false); removeImage()
                     }}
                   >
@@ -805,16 +845,38 @@ export default function Chat() {
             <button className="remove-image" onClick={() => { setRefImage(null); setRefImagePreview(null) }}>✕</button>
           </div>
         )}
+        {attachedFiles.length > 0 && (
+          <div className="attached-files">
+            {attachedFiles.map((f, i) => (
+              <div key={i} className="attached-file">
+                <span className="attached-file-icon">{f.type === 'image' ? '🖼' : f.type === 'text' ? '📄' : '📎'}</span>
+                <span className="attached-file-name">{f.name}</span>
+                <span className="attached-file-size">({(f.size/1024).toFixed(0)}KB)</span>
+                <button className="attached-file-remove" onClick={() => removeFile(i)}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="input-wrapper">
           <input ref={galleryInputRef} type="file" accept="image/*" onChange={handleImage} style={{ display: 'none' }} />
           <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImage} style={{ display: 'none' }} />
           <input ref={refInputRef} type="file" accept="image/*" onChange={handleRefImage} style={{ display: 'none' }} />
+          <input ref={fileInputRef} type="file" multiple accept=".txt,.md,.csv,.json,.xml,.yaml,.yml,.log,.js,.jsx,.ts,.tsx,.py,.java,.cpp,.c,.h,.html,.css,.php,.rb,.go,.rs,.swift,.kt,.sql,.sh,.bat,.ps1,.r,.lua,.pl,.cs,.swift,.kt,.dart,.scala,.ex,.exs,.hs,.clj,.lisp,.elm,.vue,.svelte,.astro,.toml,.ini,.cfg,.conf,.env,.gitignore,.dockerignore,.dockerfile,.yaml,.yml,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx" onChange={handleFileUpload} style={{ display: 'none' }} />
           <div className="attach-group">
             <button className="attach-btn" onClick={() => galleryInputRef.current?.click()} title="Subir imagen para analizar">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                 <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </button>
+            <button className="attach-btn file-btn" onClick={() => fileInputRef.current?.click()} title="Subir archivo (codigo, texto, PDF, etc)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
               </svg>
             </button>
             <button className="attach-btn ref-btn" onClick={() => refInputRef.current?.click()} title="Subir imagen de referencia para /img">
