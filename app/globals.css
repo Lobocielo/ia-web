@@ -505,7 +505,8 @@ body {
 .model-overlay {
   position: fixed;
   inset: 0;
-  z-index: 99;
+  z-index: 9998;
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .model-dropdown {
@@ -513,13 +514,13 @@ body {
   top: 60px;
   left: 50%;
   transform: translateX(-50%);
-  background: #1a1a1e;
-  border: 1px solid #333;
+  background: #0d0d0d;
+  border: 1px solid #2a2a2a;
   border-radius: 16px;
   padding: 6px;
   width: 320px;
-  z-index: 100;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  z-index: 9999;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.9);
   animation: fadeIn 0.2s ease;
   max-height: 50vh;
   overflow-y: auto;
