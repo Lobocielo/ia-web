@@ -4,22 +4,22 @@ import { useState, useRef, useEffect } from 'react'
 
 const MODELS = [
   // === CHAT GRATIS (Groq) ===
-  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Gratis - potente y rapido', vision: false, cat: 'Gratis (Groq)', type: 'llm' },
-  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Gratis - ultra rapido', vision: false, cat: 'Gratis (Groq)', type: 'llm' },
-  { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Gratis - vision + chat', vision: true, cat: 'Gratis (Groq)', type: 'llm' },
+  { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', desc: 'Potente y rapido', vision: false, cat: 'Gratis', type: 'llm' },
+  { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Ultra rapido', vision: false, cat: 'Gratis', type: 'llm' },
+  { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision + chat', vision: true, cat: 'Gratis', type: 'llm' },
 
   // === CHAT PREMIUM (OpenRouter) ===
-  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', desc: 'Sin censura - roleplay libre', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
-  { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', desc: 'Sin censura - el mas grande', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
-  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition', name: 'Dolphin Venice', desc: 'Sin censura - 100% libre', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
-  { id: 'deepseek/deepseek-v4-flash', name: 'DeepSeek V4 Flash', desc: 'Sin censura - rapido y potente', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
-  { id: 'mistralai/mistral-large-2512', name: 'Mistral Large 3', desc: 'Sin censura - Mistral oficial', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
-  { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', desc: 'Gratis - Google IA', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
-  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Gratis - Multilingue', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
-  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Premium - mejor razonamiento', vision: false, cat: 'Premium (OpenRouter)', type: 'llm', premium: true },
+  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', desc: 'Roleplay libre', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', desc: 'El mas grande', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition', name: 'Dolphin Venice', desc: '100% libre', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'deepseek/deepseek-v4-flash', name: 'DeepSeek V4 Flash', desc: 'Rapido y potente', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'mistralai/mistral-large-2512', name: 'Mistral Large 3', desc: 'Mistral oficial', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', desc: 'Google IA', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'qwen/qwen3-32b', name: 'Qwen 3 32B', desc: 'Multilingue', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet', desc: 'Mejor razonamiento', vision: false, cat: 'Premium', type: 'llm', premium: true },
 
   // === AGENTES (Groq - gratis) ===
-  { id: 'groq/compound', name: 'Compound', desc: 'Agente: busca + ejecuta codigo', vision: false, cat: 'Agentes', type: 'agent' },
+  { id: 'groq/compound', name: 'Compound', desc: 'Busca + ejecuta codigo', vision: false, cat: 'Agentes', type: 'agent' },
   { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Agente rapido', vision: false, cat: 'Agentes', type: 'agent' },
 
   // === SEGURIDAD (Groq - gratis) ===
@@ -28,10 +28,10 @@ const MODELS = [
   { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 86M', desc: 'Detecta inyeccion de prompts', vision: false, cat: 'Seguridad', type: 'safety' },
 
   // === AUDIO (Groq - gratis) ===
-  { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'Transcribe audio a texto', vision: false, cat: 'Audio', type: 'stt' },
-  { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'Transcribe audio rapido', vision: false, cat: 'Audio', type: 'stt' },
-  { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', desc: 'Texto a voz en ingles', vision: false, cat: 'Audio', type: 'tts' },
-  { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus Arabic', desc: 'Texto a voz en arabe', vision: false, cat: 'Audio', type: 'tts' },
+  { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'Transcribe audio', vision: false, cat: 'Audio', type: 'stt' },
+  { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'Transcribe rapido', vision: false, cat: 'Audio', type: 'stt' },
+  { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', desc: 'Texto a voz ingles', vision: false, cat: 'Audio', type: 'tts' },
+  { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus Arabic', desc: 'Texto a voz arabe', vision: false, cat: 'Audio', type: 'tts' },
 ]
 
 function SearchCard({ query, url }) {
@@ -336,7 +336,7 @@ export default function Chat() {
               <>
                 <div className="model-overlay" onClick={() => setShowModelPicker(false)} />
                 <div className="model-dropdown">
-                  {['Gratis (Groq)', 'Premium (OpenRouter)', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
+                  {['Gratis', 'Premium', 'Agentes', 'Seguridad', 'Audio'].map(cat => (
                     <div key={cat}>
                       <div className="model-cat-header">{cat}</div>
                       {MODELS.filter(m => m.cat === cat).map(m => (
@@ -383,6 +383,21 @@ export default function Chat() {
       </div>
 
       <div className="messages">
+        <div className="chat-bg-logo">
+          <svg viewBox="0 0 120 120" fill="none" width="120" height="120">
+            <defs>
+              <linearGradient id="bgLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.08"/>
+                <stop offset="50%" stopColor="#a855f7" stopOpacity="0.06"/>
+                <stop offset="100%" stopColor="#ec4899" stopOpacity="0.04"/>
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="55" stroke="url(#bgLogoGrad)" strokeWidth="2" fill="none"/>
+            <circle cx="45" cy="50" r="5" fill="url(#bgLogoGrad)"/>
+            <circle cx="75" cy="50" r="5" fill="url(#bgLogoGrad)"/>
+            <path d="M35 70c0-13.8 10.9-25 25-25s25 11.2 25 25" stroke="url(#bgLogoGrad)" strokeWidth="3" strokeLinecap="round" fill="none"/>
+          </svg>
+        </div>
         {messages.length === 0 && !loading && (
           <div className="welcome">
             <div className="welcome-icon">
