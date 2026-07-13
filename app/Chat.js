@@ -8,10 +8,10 @@ const MODELS = [
   { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', desc: 'Ultra rapido', vision: false, cat: 'Gratis', type: 'llm' },
   { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', desc: 'Vision + chat', vision: true, cat: 'Gratis', type: 'llm' },
 
-  // === CHAT PREMIUM (OpenRouter) ===
-  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', desc: 'Roleplay libre', vision: false, cat: 'Premium', type: 'llm', premium: true },
-  { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', desc: 'El mas grande', vision: false, cat: 'Premium', type: 'llm', premium: true },
-  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition', name: 'Dolphin Venice', desc: '100% libre', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  // === CHAT PREMIUM ===
+  { id: 'nousresearch/hermes-4-70b', name: 'Hermes 4 70B', desc: 'Sin censura - roleplay libre', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'nousresearch/hermes-3-llama-3.1-405b', name: 'Hermes 3 405B', desc: 'Sin censura - el mas grande', vision: false, cat: 'Premium', type: 'llm', premium: true },
+  { id: 'cognitivecomputations/dolphin-mistral-24b-venice-edition', name: 'Dolphin Venice', desc: 'Sin censura - 100% libre', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'deepseek/deepseek-v4-flash', name: 'DeepSeek V4 Flash', desc: 'Rapido y potente', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'mistralai/mistral-large-2512', name: 'Mistral Large 3', desc: 'Mistral oficial', vision: false, cat: 'Premium', type: 'llm', premium: true },
   { id: 'google/gemma-3-27b-it:free', name: 'Gemma 3 27B', desc: 'Google IA', vision: false, cat: 'Premium', type: 'llm', premium: true },
@@ -22,16 +22,16 @@ const MODELS = [
   { id: 'groq/compound', name: 'Compound', desc: 'Busca + ejecuta codigo', vision: false, cat: 'Agentes', type: 'agent' },
   { id: 'groq/compound-mini', name: 'Compound Mini', desc: 'Agente rapido', vision: false, cat: 'Agentes', type: 'agent' },
 
-  // === SEGURIDAD (Groq - gratis) ===
+  // === SEGURIDAD ===
   { id: 'openai/gpt-oss-safeguard-20b', name: 'GPT Safeguard 20B', desc: 'Filtra contenido peligroso', vision: false, cat: 'Seguridad', type: 'safety' },
   { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Prompt Guard 22M', desc: 'Detecta prompt injection', vision: false, cat: 'Seguridad', type: 'safety' },
-  { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 86M', desc: 'Detecta inyeccion de prompts', vision: false, cat: 'Seguridad', type: 'safety' },
+  { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 86m', desc: 'Detecta inyeccion de prompts', vision: false, cat: 'Seguridad', type: 'safety' },
 
-  // === AUDIO (Groq - gratis) ===
-  { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'Transcribe audio', vision: false, cat: 'Audio', type: 'stt' },
-  { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'Transcribe rapido', vision: false, cat: 'Audio', type: 'stt' },
-  { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', desc: 'Texto a voz ingles', vision: false, cat: 'Audio', type: 'tts' },
-  { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus Arabic', desc: 'Texto a voz arabe', vision: false, cat: 'Audio', type: 'tts' },
+  // === AUDIO ===
+  { id: 'whisper-large-v3', name: 'Whisper V3', desc: 'Transcribe audio a texto', vision: false, cat: 'Audio', type: 'stt' },
+  { id: 'whisper-large-v3-turbo', name: 'Whisper Turbo', desc: 'Transcribe audio rapido', vision: false, cat: 'Audio', type: 'stt' },
+  { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', desc: 'Texto a voz en ingles', vision: false, cat: 'Audio', type: 'tts' },
+  { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus Arabic', desc: 'Texto a voz en arabe', vision: false, cat: 'Audio', type: 'tts' },
 ]
 
 function SearchCard({ query, url }) {
@@ -383,8 +383,36 @@ export default function Chat() {
       </div>
 
       <div className="messages">
+        <div className="bg-watermark">
+          <svg viewBox="0 0 120 120" fill="none" width="120" height="120">
+            <defs>
+              <linearGradient id="watermarkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.06"/>
+                <stop offset="100%" stopColor="#a855f7" stopOpacity="0.06"/>
+              </linearGradient>
+            </defs>
+            <circle cx="60" cy="60" r="55" fill="url(#watermarkGrad)"/>
+            <path d="M38 75c0-12.2 9.8-22 22-22s22 9.8 22 22" stroke="url(#watermarkGrad)" strokeWidth="5" strokeLinecap="round" fill="none" style={{stroke:'#6366f1', strokeOpacity:0.08}}/>
+            <circle cx="48" cy="52" r="5" fill="#6366f1" fillOpacity="0.08"/>
+            <circle cx="72" cy="52" r="5" fill="#6366f1" fillOpacity="0.08"/>
+          </svg>
+        </div>
         {messages.length === 0 && !loading && (
           <div className="welcome">
+            <div className="welcome-icon">
+              <svg viewBox="0 0 32 32" fill="none" width="48" height="48">
+                <defs>
+                  <linearGradient id="welcomeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#ffffff"/>
+                    <stop offset="100%" stopColor="#e0d4ff"/>
+                  </linearGradient>
+                </defs>
+                <path d="M10 20c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="url(#welcomeGrad)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+                <circle cx="12" cy="13" r="2" fill="url(#welcomeGrad)"/>
+                <circle cx="20" cy="13" r="2" fill="url(#welcomeGrad)"/>
+                <path d="M8 11c1-3 4-5 8-5s7 2 8 5" stroke="url(#welcomeGrad)" strokeWidth="2" strokeLinecap="round" opacity="0.7"/>
+              </svg>
+            </div>
             <h2>Hola, soy Nexus AI</h2>
             <p>Tu asistente de IA profesional. Busco productos, genero imagenes, escribo codigo y mas.</p>
             <div className="tips-grid">
