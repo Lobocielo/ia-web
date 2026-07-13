@@ -14,6 +14,7 @@ export default function AdminPage() {
 
   const loadUsers = async () => {
     if (!adminKey) return
+    setError('')
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
@@ -22,10 +23,11 @@ export default function AdminPage() {
       })
       const data = await res.json()
       if (data.users) { setUsers(data.users); setAuthenticated(true) }
-    } catch {}
+      else if (data.error) { setError(data.error) }
+    } catch { setError('Error de conexion') }
   }
 
-  useEffect(() => { if (adminKey && adminKey.length >= 6) loadUsers() }, [adminKey])
+  useEffect(() => {}, [])
 
   const createUser = async (e) => {
     e.preventDefault()

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 const ADMIN_USER = 'zt'
 const ADMIN_PASS = 'ZT#Secure2026!'
-const ADMIN_KEY = 'ZT#AdminKey2026!'
+const ADMIN_KEY = 'ZT#Secure2026!'
 
 const rateLimit = new Map()
 const MAX_REQUESTS = 15
