@@ -60,10 +60,6 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Demasiadas peticiones. Espera un momento.' }, { status: 429 })
   }
 
-  if (!checkFailedLogins(ip)) {
-    return NextResponse.json({ error: 'Demasiados intentos fallidos. Espera 10 minutos.' }, { status: 429 })
-  }
-
   try {
     const body = await request.json()
     const { action, username, password, adminKey } = body
@@ -76,10 +72,14 @@ export async function POST(request) {
     if (LOG.length > 500) LOG.shift()
 
     if (action === 'login') {
+      if (!checkFailedLogins(ip)) {
+        return NextResponse.json({ error: 'Demasiados intentos fallidos. Espera 10 minutos.' }, { status: 429 })
+      }
       const user = users.find(u => u.username === sanitizeInput(username) && u.password === sanitizeInput(password))
       if (!user) {
         return NextResponse.json({ error: 'Usuario o contrasena incorrecta' }, { status: 401 })
       }
+      FAILED_LOGINS.delete(ip)
       return NextResponse.json({ user: { id: user.id, username: user.username, role: user.role, premium: user.premium } })
     }
 
