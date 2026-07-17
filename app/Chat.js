@@ -847,6 +847,36 @@ export default function Chat() {
                 <span className="tip-text">Escribi codigo en Python</span>
               </div>
             </div>
+            <div className="capabilities-section">
+              <h3>Mis Capacidades</h3>
+              <div className="capabilities-grid">
+                <div className="capability-card">
+                  <div className="capability-icon">🧠</div>
+                  <h4>Comprension</h4>
+                  <p>Entiendo el contexto y la intencion detras de tus preguntas y solicitudes para darte respuestas precisas.</p>
+                </div>
+                <div className="capability-card">
+                  <div className="capability-icon">📚</div>
+                  <h4>Conocimiento</h4>
+                  <p>Amplia base de conocimientos y datos para proporcionar respuestas mas precisas y actualizadas.</p>
+                </div>
+                <div className="capability-card">
+                  <div className="capability-icon">✍️</div>
+                  <h4>Generacion de texto</h4>
+                  <p>Genero texto coherente y natural, similar al escrito por humanos, en cualquier estilo.</p>
+                </div>
+                <div className="capability-card">
+                  <div className="capability-icon">🎯</div>
+                  <h4>Personalizacion</h4>
+                  <p>Interaccion adaptada a tus necesidades y preferencias, mejorando con cada conversacion.</p>
+                </div>
+                <div className="capability-card">
+                  <div className="capability-icon">🔗</div>
+                  <h4>Integraciones</h4>
+                  <p>Me integro con otras tecnologias y herramientas para ofrecerte una experiencia completa.</p>
+                </div>
+              </div>
+            </div>
             <div className="img-model-selector">
               <label>Modelo de imagen:</label>
               <select value={imgModel} onChange={(e) => setImgModel(e.target.value)}>

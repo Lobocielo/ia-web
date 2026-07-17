@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import db from '../../../lib/db'
+import getDb from '../../../lib/db'
 
 const ADMIN_USER = 'zt'
 const ADMIN_PASS = 'ZT#Secure2026!'
@@ -19,6 +19,7 @@ let initialized = false
 
 async function ensureDB() {
   if (initialized) return
+  const db = getDb()
   await db.execute(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,6 +51,7 @@ export async function POST(request) {
   const ts = new Date().toISOString()
 
   try {
+    const db = getDb()
     await ensureDB()
 
     const body = await request.json()
