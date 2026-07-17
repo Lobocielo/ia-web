@@ -421,6 +421,9 @@ export default function Chat() {
 
   const [refImage, setRefImage] = useState(null)
   const [refImagePreview, setRefImagePreview] = useState(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [feedback, setFeedback] = useState({})
+  const [shareOpen, setShareOpen] = useState(null)
 
   const handleRefImage = async (e) => {
     const file = e.target.files?.[0]
@@ -712,6 +715,29 @@ export default function Chat() {
 
   const clearChat = () => { setMessages([]); setError(null) }
 
+  const handleFeedback = (msgIndex, type) => {
+    setFeedback(prev => ({ ...prev, [msgIndex]: prev[msgIndex] === type ? null : type }))
+  }
+
+  const shareMessage = (text, platform) => {
+    const url = 'https://ia-web-zeta.vercel.app'
+    const msg = text.slice(0, 200)
+    const encoded = encodeURIComponent(msg)
+    const encodedUrl = encodeURIComponent(url)
+    const links = {
+      twitter: `https://twitter.com/intent/tweet?text=${encoded}&url=${encodedUrl}`,
+      whatsapp: `https://wa.me/?text=${encoded}%20${encodedUrl}`,
+      telegram: `https://t.me/share/url?url=${encodedUrl}&text=${encoded}`,
+      copy: null
+    }
+    if (platform === 'copy') {
+      navigator.clipboard.writeText(text).then(() => { setShareOpen(null) })
+      return
+    }
+    window.open(links[platform], '_blank', 'width=600,height=400')
+    setShareOpen(null)
+  }
+
   const suggestions = [
     'Explica que es la programacion',
     'Escribi un script en Python',
@@ -740,7 +766,7 @@ export default function Chat() {
           </div>
           <span className="logo-text">Nexus AI</span>
         </div>
-        <div className="header-actions">
+        <div className="header-actions desktop-only">
           <div className="model-selector">
             <button className="model-badge" onClick={() => setShowModelPicker(!showModelPicker)}>
               {currentModel?.name} ▾
@@ -763,7 +789,55 @@ export default function Chat() {
             <button className="new-chat-btn" onClick={clearChat}>+ Nuevo</button>
           )}
         </div>
+        <button className="hamburger-btn mobile-only" onClick={() => setMenuOpen(!menuOpen)}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="22" height="22">
+            {menuOpen ? (
+              <>
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </>
+            ) : (
+              <>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </>
+            )}
+          </svg>
+        </button>
       </div>
+      {menuOpen && (
+        <div className="mobile-menu">
+          <div className="mobile-menu-overlay" onClick={() => setMenuOpen(false)} />
+          <div className="mobile-menu-content">
+            <div className="mobile-menu-header">
+              <span className="logo-text">Nexus AI</span>
+              <button className="mobile-menu-close" onClick={() => setMenuOpen(false)}>✕</button>
+            </div>
+            <div className="mobile-menu-item" onClick={() => { setShowModelPicker(true); setMenuOpen(false) }}>
+              <span> modelo: {currentModel?.name}</span> ▾
+            </div>
+            {user ? (
+              <>
+                <div className="mobile-menu-item">
+                  <span> {user.username}</span>
+                  {user.premium && <span className="user-premium">PRO</span>}
+                </div>
+                {user.role === 'admin' && <a href="/admin" className="mobile-menu-item">Admin</a>}
+                <button className="mobile-menu-item mobile-logout" onClick={() => { localStorage.removeItem('user'); setUser(null); setMenuOpen(false) }}>Salir</button>
+              </>
+            ) : (
+              <>
+                <a href="/login" className="mobile-menu-item">Iniciar sesion</a>
+                <a href="/admin-login" className="mobile-menu-item">Admin</a>
+              </>
+            )}
+            {messages.length > 0 && (
+              <button className="mobile-menu-item" onClick={() => { clearChat(); setMenuOpen(false) }}>+ Nuevo chat</button>
+            )}
+          </div>
+        </div>
+      )}
 
       {showModelPicker && (
         <>
@@ -909,6 +983,51 @@ export default function Chat() {
               {msg.search && <SearchCard query={msg.search.query} url={msg.search.url} />}
               {msg.generatedImage && <GeneratedImage prompt={msg.generatedImage.prompt} url={msg.generatedImage.url} />}
               {msg.model3d && <Model3DViewer modelData={msg.model3d} prompt={msg.content} />}
+              {msg.role === 'assistant' && (
+                <div className="message-actions">
+                  <button
+                    className={`action-btn ${feedback[i] === 'up' ? 'active' : ''}`}
+                    onClick={() => handleFeedback(i, 'up')}
+                    title="Util"
+                  >
+                    <svg viewBox="0 0 24 24" fill={feedback[i] === 'up' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" width="14" height="14">
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                    </svg>
+                  </button>
+                  <button
+                    className={`action-btn ${feedback[i] === 'down' ? 'active' : ''}`}
+                    onClick={() => handleFeedback(i, 'down')}
+                    title="No util"
+                  >
+                    <svg viewBox="0 0 24 24" fill={feedback[i] === 'down' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" width="14" height="14">
+                      <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+                    </svg>
+                  </button>
+                  <div className="share-container">
+                    <button
+                      className="action-btn"
+                      onClick={() => setShareOpen(shareOpen === i ? null : i)}
+                      title="Compartir"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                        <circle cx="18" cy="5" r="3"></circle>
+                        <circle cx="6" cy="12" r="3"></circle>
+                        <circle cx="18" cy="19" r="3"></circle>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                      </svg>
+                    </button>
+                    {shareOpen === i && (
+                      <div className="share-menu">
+                        <button onClick={() => shareMessage(typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || '', 'twitter')}>Twitter</button>
+                        <button onClick={() => shareMessage(typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || '', 'whatsapp')}>WhatsApp</button>
+                        <button onClick={() => shareMessage(typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || '', 'telegram')}>Telegram</button>
+                        <button onClick={() => shareMessage(typeof msg.content === 'string' ? msg.content : msg.content.find(c => c.type === 'text')?.text || '', 'copy')}>Copiar</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}
