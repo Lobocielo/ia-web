@@ -1,9 +1,12 @@
 import './globals.css'
+import Script from 'next/script'
+
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID
 
 export const metadata = {
   title: 'Nexus AI - Asistente de IA Profesional',
   description: 'Nexus AI es tu asistente de IA profesional. Genera imagenes, escribe codigo, busca productos, crea modelos 3D y mas. Potente, rapido y personalizable.',
-  keywords: ['IA', 'asistente', 'inteligencia artificial', 'chat', 'imagenes', 'codigo', '3D', 'Nexus AI'],
+  keywords: ['IA', 'asistente', 'inteligencia artificial', 'chat', 'imagenes', 'codigo', '3D', 'Nexus AI', 'asistente virtual', 'chatbot', 'generador de imagenes', 'generador de codigo'],
   authors: [{ name: 'ZT', url: 'https://github.com/Lobocielo' }],
   creator: 'ZT',
   publisher: 'Nexus AI',
@@ -19,7 +22,7 @@ export const metadata = {
         url: 'https://ia-web-zeta.vercel.app/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Nexus AI',
+        alt: 'Nexus AI - Asistente de IA',
       },
     ],
   },
@@ -65,8 +68,28 @@ export default function RootLayout({ children }) {
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <meta name="theme-color" content="#0a0a0a" />
         <link rel="canonical" href="https://ia-web-zeta.vercel.app" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {GA_ID && (
+          <>
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}', {
+                  page_title: 'Nexus AI',
+                  page_location: window.location.href,
+                });
+              `}
+            </Script>
+          </>
+        )}
+      </body>
     </html>
   )
 }

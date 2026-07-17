@@ -74,8 +74,23 @@ const GROQ_MODELS = [
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 
+const rateLimit = {}
+function checkRateLimit(ip) {
+  const now = Date.now()
+  if (!rateLimit[ip]) rateLimit[ip] = []
+  rateLimit[ip] = rateLimit[ip].filter(t => now - t < 60000)
+  if (rateLimit[ip].length >= 20) return false
+  rateLimit[ip].push(now)
+  return true
+}
+
 export async function POST(request) {
   try {
+    const ip = request.headers.get('x-forwarded-for') || 'unknown'
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json({ error: 'Demasiadas peticiones. Espera un minuto.' }, { status: 429 })
+    }
+
     const { messages, model, isPremium, mode } = await request.json()
 
     let systemPrompt

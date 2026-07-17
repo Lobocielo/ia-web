@@ -17,6 +17,16 @@ function sanitizeDisplay(str) {
 
 let initialized = false
 
+const authRateLimit = {}
+function checkAuthRateLimit(ip) {
+  const now = Date.now()
+  if (!authRateLimit[ip]) authRateLimit[ip] = []
+  authRateLimit[ip] = authRateLimit[ip].filter(t => now - t < 300000)
+  if (authRateLimit[ip].length >= 10) return false
+  authRateLimit[ip].push(now)
+  return true
+}
+
 async function ensureDB() {
   if (initialized) return
   const db = getDb()
@@ -53,6 +63,10 @@ export async function POST(request) {
   try {
     const db = getDb()
     await ensureDB()
+
+    if (!checkAuthRateLimit(ip)) {
+      return NextResponse.json({ error: 'Demasiados intentos. Espera 5 minutos.' }, { status: 429 })
+    }
 
     const body = await request.json()
     const { action, username, password, adminKey } = body

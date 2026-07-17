@@ -951,6 +951,32 @@ export default function Chat() {
                 </div>
               </div>
             </div>
+            <div className="commands-section">
+              <h3>Comandos Disponibles</h3>
+              <div className="commands-grid">
+                <div className="command-item" onClick={() => { setInput('/img '); }}>
+                  <span className="command-name">/img</span>
+                  <span className="command-desc">Generar imagen con IA</span>
+                </div>
+                <div className="command-item" onClick={() => { setInput('/3d '); }}>
+                  <span className="command-name">/3d</span>
+                  <span className="command-desc">Crear modelo 3D interactivo</span>
+                </div>
+                <div className="command-item" onClick={() => { setInput('Busca '); }}>
+                  <span className="command-name">Busca</span>
+                  <span className="command-desc">Buscar productos en ML</span>
+                </div>
+              </div>
+            </div>
+            <div className="feedback-section">
+              <div className="feedback-header">
+                <span className="feedback-icon">💬</span>
+                <span>¿Necesitas ayuda? Unite a nuestro Discord</span>
+              </div>
+              <a href="https://discord.gg/KmpPP4SGxm" target="_blank" rel="noopener noreferrer" className="discord-btn">
+                Unirme a Discord
+              </a>
+            </div>
             <div className="img-model-selector">
               <label>Modelo de imagen:</label>
               <select value={imgModel} onChange={(e) => setImgModel(e.target.value)}>
